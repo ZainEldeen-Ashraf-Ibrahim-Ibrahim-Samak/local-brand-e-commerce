@@ -12,6 +12,20 @@ notifications, and a comprehensive admin dashboard that controls catalog, orders
 promotions, branding/theming, and store policies. Bilingual (Arabic/English) with dark and
 light modes and a fully responsive UI."
 
+## Clarifications
+
+### Session 2026-05-30
+
+- Q: Is the "buyer" role an internal seller for the single brand, or an independent third-party
+  vendor in a multi-vendor marketplace? → A: Internal staff/seller account managing the single
+  brand's shared catalog and orders on the brand's behalf — no vendor storefronts or payouts.
+- Q: What is the canonical order status lifecycle? → A: Pending → Confirmed → Processing → Shipped
+  → Delivered, plus terminal Cancelled and Failed, plus Refunded and Returned states.
+- Q: How are buyer and admin accounts provisioned? → A: Admin-only provisioning — admins create or
+  invite buyer and other admin accounts; no public self-registration for privileged roles.
+- Q: Can coupons stack with active product/category discounts? → A: No stacking — a coupon cannot
+  combine with an active discount; the larger single reduction applies.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Guest browses catalog and completes a purchase (Priority: P1)
@@ -253,6 +267,8 @@ belonging to others.
   NOT be required to authenticate to browse or purchase.
 - **FR-017**: System MUST enforce role-based authorization on the server: admin has full control;
   buyer is limited to their own products and related orders; guest is limited to browsing and purchasing.
+- **FR-037**: System MUST restrict creation of buyer and admin accounts to admins (create/invite);
+  public self-registration into privileged roles MUST NOT be available. Guests remain unauthenticated.
 
 **Admin — Catalog, Orders, Customers**
 
@@ -269,6 +285,8 @@ belonging to others.
   codes with validity dates and usage limits.
 - **FR-024**: System MUST apply eligible discounts automatically and validate coupons at checkout,
   rejecting invalid, expired, or over-limit coupons with a clear message.
+- **FR-038**: System MUST NOT stack a coupon with an active product/category discount on the same
+  item; when both could apply, the larger single reduction MUST be used and the other ignored.
 - **FR-025**: Admins MUST be able to manage the homepage offers slider (add, edit, reorder, remove slides).
 
 **Admin — Store Settings, Branding & Policies**
@@ -295,15 +313,15 @@ belonging to others.
 - **FR-033**: System MUST protect customer data and transactions, never exposing sensitive payment data
   and keeping configuration secrets out of user-facing surfaces.
 - **FR-034**: System MUST prevent overselling when multiple customers compete for the last unit of stock.
+- **FR-036**: System MUST model order status using this canonical lifecycle: Pending → Confirmed →
+  Processing → Shipped → Delivered, with Cancelled and Failed as terminal states, and Refunded and
+  Returned as post-fulfillment states. Each status change MUST be recorded in the order history and
+  MUST trigger the customer notification defined in FR-014.
 
-*Marked for clarification:*
-
-- **FR-035**: The buyer role MUST operate within the store's selling model as [NEEDS CLARIFICATION:
-  the overview states the store sells products for a single local brand "not multiple brands," yet
-  also describes a buyer role that manages products "they want to sell." Is "buyer" (a) an internal
-  staff/seller account managing the single brand's catalog on the brand's behalf, or (b) an
-  independent third-party vendor selling their own products in a multi-vendor marketplace? This
-  determines whether vendor storefronts, per-vendor payouts, and separate vendor catalogs are in scope].
+- **FR-035**: The buyer role MUST operate as an internal staff/seller account for the single brand,
+  managing products and related orders within the brand's shared catalog on the brand's behalf. The
+  system MUST NOT provide separate vendor storefronts, per-vendor payouts, or independent vendor
+  catalogs (single-brand model, not a multi-vendor marketplace).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -315,7 +333,9 @@ belonging to others.
 - **Inventory**: Stock quantity for a product or variation; decremented on confirmed purchase.
 - **Cart**: A guest's transient collection of selected variants with quantities and prices.
 - **Order**: A confirmed purchase with a unique order number, line items, totals (subtotal, discount,
-  tax, shipping), customer contact details (email, WhatsApp), status, and history.
+  tax, shipping), customer contact details (email, WhatsApp), a status drawn from the canonical
+  lifecycle (Pending, Confirmed, Processing, Shipped, Delivered, Cancelled, Failed, Refunded,
+  Returned per FR-036), and a status history.
 - **Customer (Guest)**: An unregistered buyer identified for an order by email, WhatsApp number, and
   order number; not an authenticated account.
 - **User Account**: An authenticated admin or buyer with a role governing permissions.
@@ -353,12 +373,13 @@ belonging to others.
 
 ## Assumptions
 
-- The store represents a single local brand; the buyer-role selling model is pending clarification
-  (FR-035) and is assumed to be an internal staff/seller account until confirmed otherwise.
+- The store represents a single local brand; the buyer role is an internal staff/seller account
+  managing the brand's shared catalog on its behalf (per FR-035), not a third-party vendor.
 - Standard web security and privacy practices apply; sensitive payment data is handled by the payment
   provider and not stored by the store.
-- Returns, refunds, and exchanges are out of scope for the first version unless later requested; order
-  status focuses on fulfillment progression (e.g., confirmed, shipped, delivered).
+- Orders carry Refunded and Returned statuses (per FR-036) so admins can record these outcomes;
+  however, a full self-service customer return/refund workflow (RMA initiation, automated refund
+  processing) is out of scope for v1 — these states are set administratively.
 - A single store currency and locale-appropriate number/price formatting are used; multi-currency is
   out of scope for v1.
 - WhatsApp and email are the supported notification channels; SMS and push notifications are out of scope.
