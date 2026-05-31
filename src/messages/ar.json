@@ -1,0 +1,67 @@
+{
+  "common": {
+    "addToCart": "أضف إلى السلة",
+    "outOfStock": "غير متوفر",
+    "search": "بحث",
+    "cart": "السلة",
+    "checkout": "إتمام الشراء",
+    "total": "الإجمالي",
+    "subtotal": "المجموع الفرعي",
+    "tax": "الضريبة",
+    "shipping": "الشحن",
+    "discount": "الخصم",
+    "apply": "تطبيق",
+    "continue": "متابعة",
+    "loading": "جارٍ التحميل…"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "products": "المنتجات",
+    "trackOrder": "تتبع الطلب",
+    "about": "من نحن",
+    "contact": "اتصل بنا"
+  },
+  "filters": {
+    "size": "المقاس",
+    "color": "اللون",
+    "price": "السعر",
+    "category": "الفئة",
+    "clear": "مسح عوامل التصفية"
+  },
+  "checkout": {
+    "contact": "بيانات التواصل",
+    "email": "البريد الإلكتروني",
+    "whatsapp": "رقم واتساب",
+    "name": "الاسم الكامل",
+    "address": "عنوان الشحن",
+    "couponCode": "كود الخصم",
+    "payNow": "ادفع الآن",
+    "orderConfirmed": "تم تأكيد طلبك",
+    "orderNumber": "رقم الطلب"
+  },
+  "track": {
+    "title": "تتبع طلبك",
+    "orderNumber": "رقم الطلب",
+    "lookup": "بحث",
+    "notFound": "لا يوجد طلب مطابق لهذه البيانات"
+  },
+  "order": {
+    "status": {
+      "pending": "قيد الانتظار",
+      "confirmed": "مؤكد",
+      "processing": "قيد التجهيز",
+      "shipped": "تم الشحن",
+      "delivered": "تم التوصيل",
+      "cancelled": "ملغي",
+      "failed": "فشل",
+      "returned": "مُرتجع",
+      "refunded": "مُسترد"
+    }
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور"
+  }
+}

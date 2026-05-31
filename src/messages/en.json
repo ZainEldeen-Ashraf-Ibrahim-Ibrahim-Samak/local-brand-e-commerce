@@ -1,0 +1,67 @@
+{
+  "common": {
+    "addToCart": "Add to cart",
+    "outOfStock": "Out of stock",
+    "search": "Search",
+    "cart": "Cart",
+    "checkout": "Checkout",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "apply": "Apply",
+    "continue": "Continue",
+    "loading": "Loading…"
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "trackOrder": "Track order",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "filters": {
+    "size": "Size",
+    "color": "Color",
+    "price": "Price",
+    "category": "Category",
+    "clear": "Clear filters"
+  },
+  "checkout": {
+    "contact": "Contact details",
+    "email": "Email",
+    "whatsapp": "WhatsApp number",
+    "name": "Full name",
+    "address": "Shipping address",
+    "couponCode": "Coupon code",
+    "payNow": "Pay now",
+    "orderConfirmed": "Your order is confirmed",
+    "orderNumber": "Order number"
+  },
+  "track": {
+    "title": "Track your order",
+    "orderNumber": "Order number",
+    "lookup": "Look up",
+    "notFound": "No order found matching those details"
+  },
+  "order": {
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "failed": "Failed",
+      "returned": "Returned",
+      "refunded": "Refunded"
+    }
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "email": "Email",
+    "password": "Password"
+  }
+}

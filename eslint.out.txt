@@ -1,0 +1,12 @@
+
+C:\Users\ALFA2023\Desktop\local-brand-e-commerce\next-env.d.ts
+  3:1  error  Do not use a triple slash reference for ./.next/types/routes.d.ts, use `import` style instead  @typescript-eslint/triple-slash-reference
+
+C:\Users\ALFA2023\Desktop\local-brand-e-commerce\scripts\seed.ts
+  19:50  error  The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+  19:68  error  The `Function` type accepts any function-like value.
+Prefer explicitly defining any function parameters and return type  @typescript-eslint/no-unsafe-function-type
+
+✖ 3 problems (3 errors, 0 warnings)
+

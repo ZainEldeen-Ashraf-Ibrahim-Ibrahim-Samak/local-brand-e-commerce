@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Default design tokens. These are overridden at runtime by ThemeSettings
+ * (admin-configured) via inline CSS variables on <html> (see src/lib/design-tokens).
+ * Both light and dark palettes derive from the same token set (Principle I & II).
+ */
+:root {
+  --color-primary: #1f2937;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #d97706;
+  --color-secondary-fg: #ffffff;
+  --color-bg: #ffffff;
+  --color-fg: #111827;
+  --color-muted: #f3f4f6;
+  --color-muted-fg: #6b7280;
+  --color-border: #e5e7eb;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --color-bg: #0b0f17;
+  --color-fg: #f3f4f6;
+  --color-muted: #1f2937;
+  --color-muted-fg: #9ca3af;
+  --color-border: #374151;
+  --color-primary-fg: #ffffff;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-family);
+}

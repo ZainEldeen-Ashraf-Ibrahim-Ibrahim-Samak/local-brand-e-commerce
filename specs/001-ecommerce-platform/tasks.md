@@ -28,13 +28,13 @@ SMTP/Nodemailer, WhatsApp, Tailwind, next-intl (AR/EN, RTL), next-themes, Auth.j
 
 **Purpose**: Project initialization and tooling
 
-- [ ] T001 Initialize Next.js 15 App Router + TypeScript project at repo root (`package.json`, `tsconfig.json`, `next.config.ts`, `src/app/`)
-- [ ] T002 Install runtime dependencies (mongoose, ioredis, next-intl, next-themes, cloudinary, nodemailer, zod, next-auth, argon2) in `package.json`
-- [ ] T003 [P] Configure Tailwind CSS with CSS-variable token theme in `tailwind.config.ts` and `src/app/globals.css`
-- [ ] T004 [P] Configure ESLint + Prettier + strict TS in `eslint.config.mjs`, `.prettierrc`, `tsconfig.json`
-- [ ] T005 [P] Configure Vitest + React Testing Library + Playwright + MongoDB Memory Server in `vitest.config.ts` and `playwright.config.ts`
-- [ ] T006 Create the source folder skeleton per plan.md (`src/app`, `src/components/ui`, `src/lib`, `src/models`, `src/services`, `src/messages`, `tests/`)
-- [ ] T007 [P] Add `.env.example` with all required variables from quickstart.md (no secrets committed)
+- [X] T001 Initialize Next.js 15 App Router + TypeScript project at repo root (`package.json`, `tsconfig.json`, `next.config.ts`, `src/app/`)
+- [X] T002 Install runtime dependencies (mongoose, ioredis, next-intl, next-themes, cloudinary, nodemailer, zod, next-auth, stripe, bcryptjs) in `package.json` — 577 packages installed (nodemailer bumped to v7 for next-auth peer; argon2→bcryptjs to avoid native build)
+- [X] T003 [P] Configure Tailwind CSS with CSS-variable token theme in `tailwind.config.ts` and `src/app/globals.css`
+- [X] T004 [P] Configure ESLint + Prettier + strict TS in `eslint.config.mjs`, `.prettierrc`, `tsconfig.json`
+- [X] T005 [P] Configure Vitest + React Testing Library + Playwright + MongoDB Memory Server in `vitest.config.ts` and `playwright.config.ts`
+- [X] T006 Create the source folder skeleton per plan.md (`src/app`, `src/components/ui`, `src/lib`, `src/models`, `src/services`, `src/messages`, `tests/`)
+- [X] T007 [P] Add `.env.example` with all required variables from quickstart.md (no secrets committed)
 
 ---
 
@@ -46,37 +46,37 @@ SMTP/Nodemailer, WhatsApp, Tailwind, next-intl (AR/EN, RTL), next-themes, Auth.j
 
 ### Infrastructure & cross-cutting
 
-- [ ] T008 Implement MongoDB connection helper (singleton, hot-reload safe) in `src/lib/db/connect.ts`
-- [ ] T009 [P] Implement Redis client + cache-aside + tag-based invalidation helpers in `src/lib/cache/index.ts`
-- [ ] T010 [P] Implement environment config loader + validation in `src/lib/config/env.ts`
-- [ ] T011 [P] Implement structured JSON logger + request correlation IDs in `src/lib/observability/logger.ts`
-- [ ] T012 Implement central API error handler + typed error responses in `src/lib/http/errors.ts`
-- [ ] T013 [P] Implement Cloudinary upload/transform + signed-upload helper in `src/lib/media/cloudinary.ts`
-- [ ] T014 [P] Implement notification dispatcher (email SMTP + WhatsApp) with bounded retry/backoff + NotificationLog model in `src/lib/notifications/dispatcher.ts` and `src/models/NotificationLog.ts`
-- [ ] T015 [P] Implement provider-agnostic payment adapter interface (createPaymentSession/verifyWebhook/getPaymentStatus) + Stripe implementation in `src/lib/payments/adapter.ts` and `src/lib/payments/stripe.ts`
+- [X] T008 Implement MongoDB connection helper (singleton, hot-reload safe) in `src/lib/db/connect.ts`
+- [X] T009 [P] Implement Redis client + cache-aside + tag-based invalidation helpers in `src/lib/cache/index.ts`
+- [X] T010 [P] Implement environment config loader + validation in `src/lib/config/env.ts`
+- [X] T011 [P] Implement structured JSON logger + request correlation IDs in `src/lib/observability/logger.ts`
+- [X] T012 Implement central API error handler + typed error responses in `src/lib/http/errors.ts`
+- [X] T013 [P] Implement Cloudinary upload/transform + signed-upload helper in `src/lib/media/cloudinary.ts`
+- [X] T014 [P] Implement notification dispatcher (email SMTP + WhatsApp) with bounded retry/backoff + NotificationLog model in `src/lib/notifications/dispatcher.ts` and `src/models/NotificationLog.ts`
+- [X] T015 [P] Implement provider-agnostic payment adapter interface (createPaymentSession/verifyWebhook/getPaymentStatus) + Stripe implementation in `src/lib/payments/adapter.ts` and `src/lib/payments/stripe.ts`
 
 ### Auth & authorization (FR-016, FR-017, FR-037)
 
-- [ ] T016 Implement Auth.js credentials config (argon2 verify, server sessions) in `src/lib/auth/config.ts`
-- [ ] T017 Create User model (admin|buyer, passwordHash, createdByUserId) in `src/models/User.ts`
-- [ ] T018 Implement route-group middleware + server-side role guards (admin/buyer/guest) in `src/middleware.ts` and `src/lib/auth/guards.ts`
-- [ ] T019 Implement auth route handlers (signin/signout/session) in `src/app/api/auth/[...nextauth]/route.ts`
+- [X] T016 Implement Auth.js credentials config (bcryptjs verify, server sessions) in `src/lib/auth/config.ts`
+- [X] T017 Create User model (admin|buyer, passwordHash, createdByUserId) in `src/models/User.ts`
+- [X] T018 Implement route-group middleware + server-side role guards (admin/buyer/guest) in `src/middleware.ts` and `src/lib/auth/guards.ts`
+- [X] T019 Implement auth route handlers (signin/signout/session) in `src/app/api/auth/[...nextauth]/route.ts`
 
 ### i18n, theming & reusable UI (Principles I & II)
 
-- [ ] T020 Configure next-intl locale routing (`[locale]` ar/en) + RTL `dir` at layout root in `src/i18n/request.ts`, `src/app/[locale]/layout.tsx`
-- [ ] T021 [P] Create AR/EN message catalogs scaffold in `src/messages/ar.json` and `src/messages/en.json`
-- [ ] T022 [P] Implement design-token schema + runtime token→CSS-variable resolver in `src/lib/design-tokens/index.ts`
-- [ ] T023 [P] Implement dark/light theme provider (next-themes) bound to tokens in `src/components/theme/ThemeProvider.tsx`
-- [ ] T024 [P] Build reusable UI primitives (Button, Input, Select, Card, Modal, Badge, Spinner) consuming tokens in `src/components/ui/`
+- [X] T020 Configure next-intl locale routing (`[locale]` ar/en) + RTL `dir` at layout root in `src/i18n/request.ts`, `src/app/[locale]/layout.tsx` (+ `routing.ts`, `navigation.ts`, root `layout.tsx`)
+- [X] T021 [P] Create AR/EN message catalogs scaffold in `src/messages/ar.json` and `src/messages/en.json`
+- [X] T022 [P] Implement design-token schema + runtime token→CSS-variable resolver in `src/lib/design-tokens/index.ts`
+- [X] T023 [P] Implement dark/light theme provider (next-themes) bound to tokens in `src/components/theme/ThemeProvider.tsx`
+- [X] T024 [P] Build reusable UI primitives (Button, Input, Select, Card, Modal, Badge, Spinner) consuming tokens in `src/components/ui/`
 
 ### Admin-configurable singletons + storefront shell (Principle V)
 
-- [ ] T025 [P] Create WebsiteSettings, ThemeSettings, TaxShippingPolicy singleton models in `src/models/WebsiteSettings.ts`, `src/models/ThemeSettings.ts`, `src/models/TaxShippingPolicy.ts`
-- [ ] T026 Implement settings/theme service with cache + public read in `src/services/settings.service.ts`
-- [ ] T027 Implement public settings endpoint `GET /api/storefront/settings` in `src/app/api/storefront/settings/route.ts`
-- [ ] T028 Build storefront layout shell (header/footer/SEO from WebsiteSettings, theme applied via CSS vars) in `src/app/[locale]/(storefront)/layout.tsx`
-- [ ] T029 Implement DB seed script (admin from env, singletons defaults, demo categories/products/variations) in `scripts/seed.ts`
+- [X] T025 [P] Create WebsiteSettings, ThemeSettings, TaxShippingPolicy singleton models in `src/models/WebsiteSettings.ts`, `src/models/ThemeSettings.ts`, `src/models/TaxShippingPolicy.ts`
+- [X] T026 Implement settings/theme service with cache + public read in `src/services/settings.service.ts`
+- [X] T027 Implement public settings endpoint `GET /api/storefront/settings` in `src/app/api/storefront/settings/route.ts`
+- [X] T028 Build storefront layout shell (header/footer/SEO from WebsiteSettings, theme applied via CSS vars) in `src/app/[locale]/(storefront)/layout.tsx` (+ `SiteHeader`, `SiteFooter`)
+- [X] T029 Implement DB seed script (admin from env, singletons defaults, demo categories/products/variations) in `scripts/seed.ts`
 
 **Checkpoint**: Foundation ready — user stories can now begin.
 
@@ -92,39 +92,39 @@ checkout to a confirmed order with an order number — without logging in.
 
 ### Models for US1
 
-- [ ] T030 [P] [US1] Create Category model in `src/models/Category.ts`
-- [ ] T031 [P] [US1] Create Product model (attributes, status, ownerUserId, images, seo) in `src/models/Product.ts`
-- [ ] T032 [P] [US1] Create Variation model (sku, options, stock, priceOverride) in `src/models/Variation.ts`
-- [ ] T033 [P] [US1] Create Order model (orderNumber, lines, totals, status lifecycle, statusHistory, payment) in `src/models/Order.ts`
+- [X] T030 [P] [US1] Create Category model in `src/models/Category.ts`
+- [X] T031 [P] [US1] Create Product model (attributes, status, ownerUserId, images, seo) in `src/models/Product.ts`
+- [X] T032 [P] [US1] Create Variation model (sku, options, stock, priceOverride) in `src/models/Variation.ts`
+- [X] T033 [P] [US1] Create Order model (orderNumber, lines, totals, status lifecycle, statusHistory, payment) in `src/models/Order.ts`
 
 ### Critical-path tests for US1 (write first; must fail before implementation)
 
-- [ ] T034 [P] [US1] Unit test: concurrent purchase of last unit yields exactly one success, no negative stock (SC-010) in `tests/unit/inventory.oversell.test.ts`
-- [ ] T035 [P] [US1] Unit test: pricing resolver computes subtotal + tax + shipping correctly in `tests/unit/pricing.base.test.ts`
+- [X] T034 [P] [US1] Test: concurrent purchase of last unit yields exactly one success, no negative stock (SC-010) in `tests/integration/inventory.oversell.test.ts` — PASSING
+- [X] T035 [P] [US1] Unit test: pricing resolver computes subtotal + tax + shipping correctly in `tests/unit/pricing.base.test.ts` — PASSING
 
 ### Services & logic for US1
 
-- [ ] T036 [US1] Implement catalog service (list with combined filters + facets, search, product-by-slug) with cache in `src/services/catalog.service.ts`
-- [ ] T037 [P] [US1] Implement pricing resolver (base price + tax + shipping; discount/coupon hooks stubbed) in `src/lib/pricing/resolve.ts`
-- [ ] T038 [US1] Implement inventory service: atomic conditional stock decrement inside an order transaction (R3, FR-034) in `src/services/inventory.service.ts`
-- [ ] T039 [US1] Implement order service (create pending order, order-number generation, confirm on payment, fail/preserve cart) in `src/services/order.service.ts`
+- [X] T036 [US1] Implement catalog service (list with combined filters + facets, search, product-by-slug) with cache in `src/services/catalog.service.ts`
+- [X] T037 [P] [US1] Implement pricing resolver (base price + tax + shipping; no-stacking helper ready for US5) in `src/lib/pricing/resolve.ts`
+- [X] T038 [US1] Implement inventory service: atomic conditional stock decrement with compensation (R3, FR-034) in `src/services/inventory.service.ts`
+- [X] T039 [US1] Implement order service (create pending order, order-number generation, confirm on payment, fail/preserve cart) in `src/services/order.service.ts`
 
 ### Storefront API for US1 (contracts/storefront-api.md)
 
-- [ ] T040 [P] [US1] Implement `GET /api/storefront/products` (filters/search/facets) in `src/app/api/storefront/products/route.ts`
-- [ ] T041 [P] [US1] Implement `GET /api/storefront/products/[slug]` in `src/app/api/storefront/products/[slug]/route.ts`
-- [ ] T042 [P] [US1] Implement `GET /api/storefront/categories` in `src/app/api/storefront/categories/route.ts`
-- [ ] T043 [P] [US1] Implement `POST /api/storefront/cart/validate` (reprice + availability) in `src/app/api/storefront/cart/validate/route.ts`
-- [ ] T044 [P] [US1] Implement `POST /api/storefront/checkout/quote` in `src/app/api/storefront/checkout/quote/route.ts`
-- [ ] T045 [US1] Implement `POST /api/storefront/checkout` (atomic stock check, create order, init payment) in `src/app/api/storefront/checkout/route.ts`
-- [ ] T046 [US1] Implement `POST /api/storefront/payments/webhook` (verify, confirm/fail order, commit stock, dispatch confirmation) in `src/app/api/storefront/payments/webhook/route.ts`
+- [X] T040 [P] [US1] Implement `GET /api/storefront/products` (filters/search/facets) in `src/app/api/storefront/products/route.ts`
+- [X] T041 [P] [US1] Implement `GET /api/storefront/products/[slug]` in `src/app/api/storefront/products/[slug]/route.ts`
+- [X] T042 [P] [US1] Implement `GET /api/storefront/categories` in `src/app/api/storefront/categories/route.ts`
+- [X] T043 [P] [US1] Implement `POST /api/storefront/cart/validate` (reprice + availability) in `src/app/api/storefront/cart/validate/route.ts`
+- [X] T044 [P] [US1] Implement `POST /api/storefront/checkout/quote` in `src/app/api/storefront/checkout/quote/route.ts`
+- [X] T045 [US1] Implement `POST /api/storefront/checkout` (atomic stock check, create order, init payment) in `src/app/api/storefront/checkout/route.ts`
+- [X] T046 [US1] Implement `POST /api/storefront/payments/webhook` (verify, confirm/fail order, commit stock, dispatch confirmation) in `src/app/api/storefront/payments/webhook/route.ts`
 
 ### Storefront UI for US1
 
-- [ ] T047 [P] [US1] Build ProductCard + FilterPanel + VariantPicker components in `src/components/product/`
-- [ ] T048 [US1] Build home + catalog listing page (with filters/search/facets) in `src/app/[locale]/(storefront)/page.tsx` and `src/app/[locale]/(storefront)/products/page.tsx`
-- [ ] T049 [US1] Build product detail page (variant select, availability, add to cart) in `src/app/[locale]/(storefront)/products/[slug]/page.tsx`
-- [ ] T050 [US1] Build cart + checkout flow (cart summary, checkout form, totals, payment redirect, confirmation) in `src/app/[locale]/(storefront)/cart/` and `src/app/[locale]/(storefront)/checkout/`
+- [X] T047 [P] [US1] Build ProductCard + FilterPanel + VariantPicker components in `src/components/product/` (+ guest cart hook, money format)
+- [X] T048 [US1] Build home + catalog listing page (with filters/search/facets) in `src/app/[locale]/(storefront)/page.tsx` and `src/app/[locale]/(storefront)/products/page.tsx`
+- [X] T049 [US1] Build product detail page (variant select, availability, add to cart) in `src/app/[locale]/(storefront)/products/[slug]/page.tsx`
+- [X] T050 [US1] Build cart + checkout flow (cart summary, checkout form, totals, payment redirect, confirmation) in `src/app/[locale]/(storefront)/cart/` and `src/app/[locale]/(storefront)/checkout/`
 
 **Checkpoint**: US1 fully functional — guest can purchase end to end (MVP).
 
@@ -140,14 +140,14 @@ status-change notification is dispatched on both channels.
 
 ### Critical-path test for US2
 
-- [ ] T051 [P] [US2] Unit test: tracking returns uniform not-found on mismatch and is rate-limited (R5, non-enumeration) in `tests/unit/tracking.enumeration.test.ts`
+- [X] T051 [P] [US2] Unit test: tracking returns uniform not-found on mismatch and is rate-limited (R5, non-enumeration) in `tests/unit/tracking.enumeration.test.ts`
 
 ### Implementation for US2
 
-- [ ] T052 [US2] Implement order-tracking service (exact match order#+email+whatsapp, rate-limited via Redis) in `src/services/tracking.service.ts`
-- [ ] T053 [US2] Implement `POST /api/storefront/orders/track` (uniform non-revealing response) in `src/app/api/storefront/orders/track/route.ts`
-- [ ] T054 [US2] Wire order status-change events to the notification dispatcher with localized AR/EN templates (FR-014, FR-015) in `src/services/order.service.ts` and `src/lib/notifications/templates/`
-- [ ] T055 [US2] Build order-tracking page (lookup form + status timeline) in `src/app/[locale]/(storefront)/track/page.tsx`
+- [X] T052 [US2] Implement order-tracking service (exact match order#+email+whatsapp, rate-limited via Redis) in `src/services/tracking.service.ts`
+- [X] T053 [US2] Implement `POST /api/storefront/orders/track` (uniform non-revealing response) in `src/app/api/storefront/orders/track/route.ts`
+- [X] T054 [US2] Wire order status-change events to the notification dispatcher with localized AR/EN templates (FR-014, FR-015) in `src/services/order.service.ts` and `src/lib/notifications/templates/`
+- [X] T055 [US2] Build order-tracking page (lookup form + status timeline) in `src/app/[locale]/(storefront)/track/page.tsx`
 
 **Checkpoint**: US1 + US2 work independently — guest can buy and track.
 
@@ -163,7 +163,7 @@ in storefront), and advance an order's status (reflected in tracking).
 
 ### Implementation for US3 (contracts/admin-api.md)
 
-- [ ] T056 [US3] Implement admin catalog service (CRUD products/variations/categories, publish/unpublish, cache invalidation) in `src/services/admin/catalog.admin.service.ts`
+- [X] T056 [US3] Implement admin catalog service (CRUD products/variations/categories, publish/unpublish, cache invalidation) in `src/services/admin/catalog.admin.service.ts`
 - [ ] T057 [P] [US3] Implement admin product/variation/category endpoints under `src/app/api/admin/products/`, `src/app/api/admin/variations/`, `src/app/api/admin/categories/`
 - [ ] T058 [P] [US3] Implement signed media upload endpoint `POST /api/admin/media/sign` in `src/app/api/admin/media/sign/route.ts`
 - [ ] T059 [US3] Implement stock-adjust endpoint `PATCH /api/admin/variations/[id]/stock` (logged) in `src/app/api/admin/variations/[id]/stock/route.ts`
