@@ -11,7 +11,7 @@ const patchSchema = z.object({
   name: localizedTextSchema.optional(),
   slug: z.string().optional(),
   parent: z.string().nullable().optional(),
-  image: mediaRefSchema.optional(),
+  image: mediaRefSchema.nullable().optional(),
   isActive: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 });

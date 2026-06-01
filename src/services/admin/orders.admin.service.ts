@@ -10,6 +10,8 @@ import type { FilterQuery } from "mongoose";
  */
 export type AdminOrderQuery = {
   status?: OrderStatus;
+  /** Multiple statuses for logical-group filtering (?completion=). */
+  statuses?: OrderStatus[];
   q?: string; // matches order number or customer email
   page?: number;
   pageSize?: number;
@@ -24,6 +26,7 @@ export async function listAdminOrders(query: AdminOrderQuery): Promise<{
     status: string;
     grandTotal: number;
     createdAt: Date;
+    expiresAt?: Date | null;
   }>;
   page: number;
   pageSize: number;
@@ -33,7 +36,13 @@ export async function listAdminOrders(query: AdminOrderQuery): Promise<{
   const page = Math.max(1, query.page ?? 1);
   const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20));
   const filter: FilterQuery<OrderDoc> = {};
-  if (query.status) filter.status = query.status;
+
+  if (query.statuses && query.statuses.length > 0) {
+    filter.status = { $in: query.statuses };
+  } else if (query.status) {
+    filter.status = query.status;
+  }
+
   if (query.q) {
     filter.$or = [
       { orderNumber: { $regex: query.q, $options: "i" } },
@@ -59,6 +68,7 @@ export async function listAdminOrders(query: AdminOrderQuery): Promise<{
       status: o.status,
       grandTotal: o.grandTotal,
       createdAt: o.createdAt as Date,
+      expiresAt: (o as { expiresAt?: Date | null }).expiresAt ?? null,
     })),
     page,
     pageSize,

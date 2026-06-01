@@ -34,8 +34,8 @@ reused for expiry — no new enum value).
 
 **Purpose**: Config and copy additions shared by all stories
 
-- [ ] T001 [P] Add i18n message keys for the image uploader, image placeholders, and order completion states in `src/messages/en.json` and `src/messages/ar.json`
-- [ ] T002 [P] Add `ORDER_EXPIRY_MINUTES` (default 30) and `CRON_SECRET` to the env loader in `src/lib/config/env.ts` and document them in `.env.example`
+- [X] T001 [P] Add i18n message keys for the image uploader, image placeholders, and order completion states in `src/messages/en.json` and `src/messages/ar.json`
+- [X] T002 [P] Add `ORDER_EXPIRY_MINUTES` (default 30) and `CRON_SECRET` to the env loader in `src/lib/config/env.ts` and document them in `.env.example`
 
 ---
 
@@ -45,9 +45,9 @@ reused for expiry — no new enum value).
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Add `destroyAsset(cloudinaryId)` (signed, server-side delete) and `validateUploadMeta({ format, bytes })` (JPEG/PNG/WebP, ≤5 MB) to `src/lib/media/cloudinary.ts`
-- [ ] T004 [P] Build the reusable `MediaUploader` (sign via `/api/admin/media/sign` → direct browser upload → client type/size/count validation → preview, reorder, remove → emits ordered `MediaRef[]` + localized alt; disables parent submit while uploading) in `src/components/ui/MediaUploader.tsx`
-- [ ] T005 [P] Build the shared `ImageWithFallback` wrapper (renders `mediaUrl(ref)` or a neutral localized placeholder — no broken images) in `src/components/ui/ImageWithFallback.tsx`
+- [X] T003 Add `destroyAsset(cloudinaryId)` (signed, server-side delete) and `validateUploadMeta({ format, bytes })` (JPEG/PNG/WebP, ≤5 MB) to `src/lib/media/cloudinary.ts`
+- [X] T004 [P] Build the reusable `MediaUploader` (sign via `/api/admin/media/sign` → direct browser upload → client type/size/count validation → preview, reorder, remove → emits ordered `MediaRef[]` + localized alt; disables parent submit while uploading) in `src/components/ui/MediaUploader.tsx`
+- [X] T005 [P] Build the shared `ImageWithFallback` wrapper (renders `mediaUrl(ref)` or a neutral localized placeholder — no broken images) in `src/components/ui/ImageWithFallback.tsx`
 
 **Checkpoint**: Foundation ready — user stories can now begin.
 
@@ -64,17 +64,17 @@ one, and confirm both images appear in order on the storefront; set a category i
 
 ### Critical-path tests for US1 (write first; must fail before implementation)
 
-- [ ] T006 [P] [US1] Unit test: `validateUploadMeta` rejects non-JPEG/PNG/WebP and >5 MB, and the service rejects >8 images (FR-206/SC-207) in `tests/unit/media.validate.test.ts`
-- [ ] T007 [P] [US1] Integration test: a product cannot be published without at least one image; draft can (FR-201a) in `tests/integration/product.publish-gate.test.ts`
+- [X] T006 [P] [US1] Unit test: `validateUploadMeta` rejects non-JPEG/PNG/WebP and >5 MB, and the service rejects >8 images (FR-206/SC-207) in `tests/unit/media.validate.test.ts`
+- [X] T007 [P] [US1] Integration test: a product cannot be published without at least one image; draft can (FR-201a) in `tests/integration/product.publish-gate.test.ts`
 
 ### Implementation for US1
 
-- [ ] T008 [US1] In `src/services/admin/catalog.admin.service.ts`: enforce the publish-requires-image gate (status `published` ⇒ `images.length ≥ 1`, else 422), cap images at 8, validate each via `validateUploadMeta`, and on update delete any removed/replaced `cloudinaryId` via `destroyAsset` (failures logged for retry)
-- [ ] T009 [P] [US1] Accept `images: MediaRef[]` on `POST /api/admin/products` and `PATCH /api/admin/products/[id]` (route already flows through the service gate) in `src/app/api/admin/products/route.ts` and `src/app/api/admin/products/[id]/route.ts`
-- [ ] T010 [P] [US1] Accept `image: MediaRef | null` (with prior-asset cleanup) on `POST /api/admin/categories` and `PATCH /api/admin/categories/[id]` in `src/app/api/admin/categories/route.ts` and `src/app/api/admin/categories/[id]/route.ts`
-- [ ] T011 [US1] Embed `MediaUploader` (multiple, ordered) into the product form and add publish-gate UX (block publish without an image) in `src/components/admin/catalog/ProductForm.tsx`
-- [ ] T012 [P] [US1] Add a single-image `MediaUploader` to category management in `src/components/admin/catalog/CategoryManager.tsx`
-- [ ] T013 [P] [US1] Render product/category images through `ImageWithFallback` on the storefront in `src/components/product/ProductCard.tsx` (and the product detail/category surfaces)
+- [X] T008 [US1] In `src/services/admin/catalog.admin.service.ts`: enforce the publish-requires-image gate (status `published` ⇒ `images.length ≥ 1`, else 422), cap images at 8, validate each via `validateUploadMeta`, and on update delete any removed/replaced `cloudinaryId` via `destroyAsset` (failures logged for retry)
+- [X] T009 [P] [US1] Accept `images: MediaRef[]` on `POST /api/admin/products` and `PATCH /api/admin/products/[id]` (route already flows through the service gate) in `src/app/api/admin/products/route.ts` and `src/app/api/admin/products/[id]/route.ts`
+- [X] T010 [P] [US1] Accept `image: MediaRef | null` (with prior-asset cleanup) on `POST /api/admin/categories` and `PATCH /api/admin/categories/[id]` in `src/app/api/admin/categories/route.ts` and `src/app/api/admin/categories/[id]/route.ts`
+- [X] T011 [US1] Embed `MediaUploader` (multiple, ordered) into the product form and add publish-gate UX (block publish without an image) in `src/components/admin/catalog/ProductForm.tsx`
+- [X] T012 [P] [US1] Add a single-image `MediaUploader` to category management in `src/components/admin/catalog/CategoryManager.tsx`
+- [X] T013 [P] [US1] Render product/category images through `ImageWithFallback` on the storefront in `src/components/product/ProductCard.tsx` (and the product detail/category surfaces)
 
 **Checkpoint**: US1 functional — products and categories carry operator-managed imagery (MVP).
 
@@ -90,9 +90,9 @@ images appear in order on the homepage with working CTAs; deactivate one and con
 
 ### Implementation for US2
 
-- [ ] T014 [US2] Accept `image: MediaRef | null` per slide (with prior-asset cleanup on replace/delete via `destroyAsset`) on `POST/PATCH /api/admin/offers` and `DELETE /api/admin/offers/[id]` in `src/app/api/admin/offers/route.ts` and `src/app/api/admin/offers/[id]/route.ts`
-- [ ] T015 [US2] Add a per-slide single-image `MediaUploader` to the offers/slider manager in `src/components/admin/offers/OffersManager.tsx`
-- [ ] T016 [US2] Render slides via `ImageWithFallback` and handle the zero-slides empty state in `src/components/storefront/HomeSlider.tsx`
+- [X] T014 [US2] Accept `image: MediaRef | null` per slide (with prior-asset cleanup on replace/delete via `destroyAsset`) on `POST/PATCH /api/admin/offers` and `DELETE /api/admin/offers/[id]` in `src/app/api/admin/offers/route.ts` and `src/app/api/admin/offers/[id]/route.ts`
+- [X] T015 [US2] Add a per-slide single-image `MediaUploader` to the offers/slider manager in `src/components/admin/offers/OffersManager.tsx`
+- [X] T016 [US2] Render slides via `ImageWithFallback` and handle the zero-slides empty state in `src/components/storefront/HomeSlider.tsx`
 
 **Checkpoint**: US1 + US2 functional — catalog and homepage promotional imagery both work.
 
@@ -110,16 +110,16 @@ double-restore.
 
 ### Critical-path tests for US3 (write first; must fail before implementation)
 
-- [ ] T017 [P] [US3] Unit test: expiry restores stock at most once, and a late payment on an expired order does not oversell (FR-215/FR-216, SC-206) in `tests/unit/order.expiry.idempotent.test.ts`
-- [ ] T018 [P] [US3] Integration test: the sweep transitions `pending`→`failed` past `expiresAt` and restores stock (FR-213/FR-214, SC-204) in `tests/integration/order.expiry.sweep.test.ts`
+- [X] T017 [P] [US3] Unit test: expiry restores stock at most once, and a late payment on an expired order does not oversell (FR-215/FR-216, SC-206) in `tests/unit/order.expiry.idempotent.test.ts`
+- [X] T018 [P] [US3] Integration test: the sweep transitions `pending`→`failed` past `expiresAt` and restores stock (FR-213/FR-214, SC-204) in `tests/integration/order.expiry.sweep.test.ts`
 
 ### Implementation for US3
 
-- [ ] T019 [US3] Add additive `expiresAt` (indexed) and `stockRestored` (default false) fields to the Order schema in `src/models/Order.ts`
-- [ ] T020 [US3] In `src/services/order.service.ts`: set `expiresAt = createdAt + ORDER_EXPIRY_MINUTES` and `stockRestored=false` on pending-order creation; implement `expireStaleOrders()` using an atomic `findOneAndUpdate({ _id, status:"pending", stockRestored:false }, …→failed, stockRestored:true)` claim that calls `restoreStock` only when matched and dispatches the status notification; extend `confirmOrder` to reconcile a late payment on an expired order (re-validate stock → re-reserve+confirm if available, else stay failed and flag refund)
-- [ ] T021 [US3] Implement the secret-gated `POST /api/cron/expire-orders` (Bearer `CRON_SECRET`; 401 otherwise) calling `expireStaleOrders()` and returning a `{scanned,expired,stockRestored}` summary in `src/app/api/cron/expire-orders/route.ts`
-- [ ] T022 [P] [US3] Add a `completion=incomplete|confirmed` filter (mapped to status sets) to `GET /api/admin/orders` in `src/app/api/admin/orders/route.ts`
-- [ ] T023 [US3] Add a completion-state filter and incomplete/confirmed badges (reusing `statusTone`) to the admin orders page in `src/app/[locale]/(admin)/admin/orders/page.tsx`
+- [X] T019 [US3] Add additive `expiresAt` (indexed) and `stockRestored` (default false) fields to the Order schema in `src/models/Order.ts`
+- [X] T020 [US3] In `src/services/order.service.ts`: set `expiresAt = createdAt + ORDER_EXPIRY_MINUTES` and `stockRestored=false` on pending-order creation; implement `expireStaleOrders()` using an atomic `findOneAndUpdate({ _id, status:"pending", stockRestored:false }, …→failed, stockRestored:true)` claim that calls `restoreStock` only when matched and dispatches the status notification; extend `confirmOrder` to reconcile a late payment on an expired order (re-validate stock → re-reserve+confirm if available, else stay failed and flag refund)
+- [X] T021 [US3] Implement the secret-gated `POST /api/cron/expire-orders` (Bearer `CRON_SECRET`; 401 otherwise) calling `expireStaleOrders()` and returning a `{scanned,expired,stockRestored}` summary in `src/app/api/cron/expire-orders/route.ts`
+- [X] T022 [P] [US3] Add a `completion=incomplete|confirmed` filter (mapped to status sets) to `GET /api/admin/orders` in `src/app/api/admin/orders/route.ts`
+- [X] T023 [US3] Add a completion-state filter and incomplete/confirmed badges (reusing `statusTone`) to the admin orders page in `src/app/[locale]/(admin)/admin/orders/page.tsx`
 
 **Checkpoint**: Abandoned orders self-resolve and free stock; admins can separate incomplete from confirmed.
 
@@ -129,9 +129,9 @@ double-restore.
 
 **Purpose**: Final validation across the new surfaces
 
-- [ ] T024 [P] E2E test: upload a product image → it shows on the storefront; create an offer slide → it shows on the homepage (Playwright) in `tests/e2e/media-and-offers.spec.ts`
-- [ ] T025 [P] Verify the uploader, admin forms, and homepage slider in AR/RTL + EN/LTR, dark/light, and responsive layouts (Principle II); confirm zero broken images across product/category/home surfaces (SC-202)
-- [ ] T026 Run `npm run typecheck` and `npm run lint`, then execute `quickstart.md` validation end to end (including the `ORDER_EXPIRY_MINUTES=1` sweep walkthrough)
+- [X] T024 [P] E2E test: upload a product image → it shows on the storefront; create an offer slide → it shows on the homepage (Playwright) in `tests/e2e/media-and-offers.spec.ts`
+- [X] T025 [P] Verify the uploader, admin forms, and homepage slider in AR/RTL + EN/LTR, dark/light, and responsive layouts (Principle II); confirm zero broken images across product/category/home surfaces (SC-202)
+- [X] T026 Run `npm run typecheck` and `npm run lint`, then execute `quickstart.md` validation end to end (including the `ORDER_EXPIRY_MINUTES=1` sweep walkthrough)
 
 ---
 

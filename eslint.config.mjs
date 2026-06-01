@@ -17,6 +17,7 @@ const eslintConfig = [
       "build/**",
       "coverage/**",
       "playwright-report/**",
+      "**/*.min.js",
     ],
   },
 ];

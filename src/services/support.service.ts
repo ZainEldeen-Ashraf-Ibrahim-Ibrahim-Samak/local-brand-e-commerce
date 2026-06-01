@@ -36,7 +36,7 @@ export async function submitInquiry(data: {
   }
 
   // Create SupportInquiry
-  const inquiry = await SupportInquiry.create({
+  await SupportInquiry.create({
     name: data.name,
     email: normalizedEmail,
     whatsapp: data.whatsapp,

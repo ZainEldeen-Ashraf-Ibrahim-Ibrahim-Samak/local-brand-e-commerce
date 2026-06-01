@@ -3,6 +3,8 @@ import { Offer, type OfferDoc } from "@/models/Offer";
 import { cacheInvalidate, CacheKeys } from "@/lib/cache";
 import { Errors } from "@/lib/http/errors";
 import type { LocalizedText, MediaRef } from "@/lib/shared/types";
+import { destroyAsset } from "@/lib/media/cloudinary";
+import { logger } from "@/lib/observability/logger";
 
 /**
  * Admin offers / homepage slider management (spec FR-024). Writes invalidate the
@@ -11,7 +13,8 @@ import type { LocalizedText, MediaRef } from "@/lib/shared/types";
 export type OfferInput = {
   title: LocalizedText;
   subtitle?: LocalizedText;
-  image?: MediaRef;
+  /** null means "remove the existing image" */
+  image?: MediaRef | null;
   ctaLabel?: LocalizedText;
   ctaHref?: string;
   isActive?: boolean;
@@ -48,9 +51,22 @@ export async function updateOffer(id: string, patch: Partial<OfferInput>): Promi
   await connectDB();
   const offer = await Offer.findById(id);
   if (!offer) throw Errors.notFound("Offer");
+
+  if (patch.image !== undefined) {
+    const oldId = offer.image?.cloudinaryId;
+    const newId = patch.image?.cloudinaryId;
+    if (oldId && oldId !== newId) {
+      destroyAsset(oldId).then((success) => {
+        if (!success) {
+          logger.error(`[Cloudinary Retry] Failed to delete asset: ${oldId}`);
+        }
+      });
+    }
+  }
+
   if (patch.title) offer.title = patch.title as never;
   if (patch.subtitle) offer.subtitle = patch.subtitle as never;
-  if (patch.image) offer.image = patch.image as never;
+  if (patch.image !== undefined) offer.image = patch.image as never;
   if (patch.ctaLabel) offer.ctaLabel = patch.ctaLabel as never;
   if (patch.ctaHref != null) offer.ctaHref = patch.ctaHref;
   if (patch.isActive != null) offer.isActive = patch.isActive;
@@ -64,8 +80,18 @@ export async function updateOffer(id: string, patch: Partial<OfferInput>): Promi
 
 export async function deleteOffer(id: string): Promise<void> {
   await connectDB();
-  const offer = await Offer.findByIdAndDelete(id);
+  const offer = await Offer.findById(id);
   if (!offer) throw Errors.notFound("Offer");
+
+  if (offer.image?.cloudinaryId) {
+    destroyAsset(offer.image.cloudinaryId).then((success) => {
+      if (!success) {
+        logger.error(`[Cloudinary Retry] Failed to delete asset: ${offer.image!.cloudinaryId}`);
+      }
+    });
+  }
+
+  await Offer.findByIdAndDelete(id);
   await cacheInvalidate(CacheKeys.home);
 }
 

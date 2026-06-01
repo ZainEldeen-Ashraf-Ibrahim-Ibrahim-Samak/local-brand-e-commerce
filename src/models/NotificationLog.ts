@@ -1,4 +1,4 @@
-import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { Schema, type InferSchemaType } from "mongoose";
 
 /** Audit + retry record for order notifications (spec FR-014/FR-015). */
 const notificationLogSchema = new Schema(

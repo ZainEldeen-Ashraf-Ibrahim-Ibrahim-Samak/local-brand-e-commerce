@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { Button, Input, Select, Card, CardBody } from "@/components/ui";
+import { Button, Input, Select, Card, CardBody, MediaUploader } from "@/components/ui";
+import type { MediaRef } from "@/lib/shared/types";
 
 export type ProductFormCategory = { id: string; name: string };
 
@@ -15,6 +16,7 @@ export type ProductFormInitial = {
   category: string;
   basePriceMajor: number;
   status: "draft" | "published" | "unpublished";
+  images?: MediaRef[];
 };
 
 /** Create/edit a product. Prices are entered in major units and stored as minor units. */
@@ -34,6 +36,8 @@ export function ProductForm({
   const [category, setCategory] = useState(initial?.category ?? categories[0]?.id ?? "");
   const [price, setPrice] = useState(initial?.basePriceMajor != null ? String(initial.basePriceMajor) : "");
   const [status, setStatus] = useState(initial?.status ?? "draft");
+  const [images, setImages] = useState<MediaRef[]>(initial?.images ?? []);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -41,12 +45,20 @@ export function ProductForm({
     e.preventDefault();
     setSaving(true);
     setError(null);
+
+    if (status === "published" && images.length === 0) {
+      setError("At least one image is required to publish this product.");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       name: { en: nameEn, ar: nameAr },
       description: { en: descEn, ar: descAr },
       category,
       basePrice: Math.round(Number(price) * 100),
       status,
+      images,
     };
     const res = await fetch(isEdit ? `/api/admin/products/${initial!.id}` : "/api/admin/products", {
       method: isEdit ? "PATCH" : "POST",
@@ -55,7 +67,8 @@ export function ProductForm({
     });
     setSaving(false);
     if (!res.ok) {
-      setError("Could not save the product");
+      const errBody = await res.json().catch(() => ({}));
+      setError(errBody?.error?.message || "Could not save the product");
       return;
     }
     const saved = await res.json();
@@ -109,10 +122,21 @@ export function ProductForm({
                 <option value="unpublished">Unpublished</option>
               </Select>
             </Field>
+            <div className="col-span-1 md:col-span-2">
+              <Field label="Product Images">
+                <MediaUploader
+                  value={images}
+                  onChange={(v) => setImages(Array.isArray(v) ? v : v ? [v] : [])}
+                  multiple={true}
+                  folder="products"
+                  onUploadingStateChange={setUploading}
+                />
+              </Field>
+            </div>
           </div>
           {error && <p className="text-sm text-danger">{error}</p>}
-          <Button type="submit" disabled={saving}>
-            {saving ? "Saving…" : isEdit ? "Save changes" : "Create product"}
+          <Button type="submit" disabled={saving || uploading}>
+            {saving ? "Saving…" : uploading ? "Uploading…" : isEdit ? "Save changes" : "Create product"}
           </Button>
         </form>
       </CardBody>

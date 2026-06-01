@@ -1,4 +1,4 @@
-import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { Schema, type InferSchemaType } from "mongoose";
 import { ORDER_STATUSES } from "@/lib/shared/types";
 
 const localized = { en: { type: String, default: "" }, ar: { type: String, default: "" } };
@@ -59,6 +59,10 @@ const orderSchema = new Schema(
       status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
       reference: String,
     },
+    /** Moment at which a still-pending order becomes expired (FR-013). Set on create. */
+    expiresAt: { type: Date, index: true },
+    /** Guards idempotency: stock is restored at most once per order (FR-013). */
+    stockRestored: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

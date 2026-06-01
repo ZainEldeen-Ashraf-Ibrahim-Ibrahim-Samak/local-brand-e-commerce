@@ -1,4 +1,4 @@
-import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { Schema, type InferSchemaType } from "mongoose";
 
 /** Admin-driven theme singleton (spec FR-027, research R7). Exactly one active doc. */
 const themeSettingsSchema = new Schema(

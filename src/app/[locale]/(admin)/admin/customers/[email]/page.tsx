@@ -21,7 +21,7 @@ export default async function AdminCustomerDetailPage({
   let detail;
   try {
     detail = await getCustomerDetail(decodedEmail);
-  } catch (err) {
+  } catch {
     return (
       <div className="space-y-4">
         <Link href="/admin/customers" className="text-sm text-primary hover:underline">

@@ -46,7 +46,7 @@ export function SupportInbox() {
         const data = await res.json();
         setError(data.error?.message || "Failed to load support inquiries");
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred loading inquiries");
     } finally {
       setLoading(false);
@@ -55,6 +55,8 @@ export function SupportInbox() {
 
   useEffect(() => {
     loadInquiries();
+    // Reload whenever the status filter changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   async function handleStatusUpdate(e: React.FormEvent) {
@@ -82,7 +84,7 @@ export function SupportInbox() {
       setNote("");
       setSelectedInquiry(null);
       loadInquiries();
-    } catch (err) {
+    } catch {
       setBusy(false);
       setError("An error occurred updating the status");
     }

@@ -16,6 +16,7 @@ import { Errors } from "@/lib/http/errors";
 import { canTransition, type OrderStatus } from "@/lib/shared/types";
 import { dispatchOrderNotification } from "@/lib/notifications/dispatcher";
 import { orderStatusMessage } from "@/lib/notifications/templates";
+import { getEnv } from "@/lib/config/env";
 
 /**
  * Order domain service (spec FR-007–FR-013, FR-036). Builds authoritative pricing
@@ -156,6 +157,9 @@ export async function createPendingOrder(input: CreateOrderInput): Promise<Order
     };
   });
 
+  const { ORDER_EXPIRY_MINUTES } = getEnv();
+  const expiresAt = new Date(Date.now() + ORDER_EXPIRY_MINUTES * 60_000);
+
   try {
     const order = await Order.create({
       orderNumber,
@@ -175,6 +179,8 @@ export async function createPendingOrder(input: CreateOrderInput): Promise<Order
       status: "pending",
       statusHistory: [{ to: "pending", at: new Date() }],
       payment: { status: "pending" },
+      expiresAt,
+      stockRestored: false,
     });
     // Count the redemption once the order is persisted (atomic; respects usage limit).
     if (appliedCouponCode) await redeemCoupon(appliedCouponCode);
@@ -215,11 +221,29 @@ export async function transitionOrder(orderId: string, to: OrderStatus, byUserId
   return order;
 }
 
-/** Webhook: payment succeeded → confirm order + notify. */
+/** Webhook: payment succeeded → confirm order + notify.
+ *  If the order has already expired (expiresAt in the past), stock has already been
+ *  restored by the sweep — we mark the payment failed so the customer gets refunded. */
 export async function markOrderPaid(orderId: string, reference: string): Promise<void> {
   await connectDB();
   const order = await Order.findById(orderId);
-  if (!order || order.status !== "pending") return; // idempotent
+  if (!order || order.status !== "pending") return; // idempotent / already transitioned
+
+  // Late payment: order expired but webhook arrived after the cron sweep.
+  if (order.expiresAt && order.expiresAt < new Date()) {
+    order.payment = { ...order.payment, status: "failed", reference };
+    order.status = "failed";
+    order.statusHistory.push({ from: "pending", to: "failed", at: new Date(), note: "late-payment" });
+    await order.save();
+    // Stock restore is idempotent — guard ensures only one release.
+    if (!order.stockRestored) {
+      const items = order.items.map((i) => ({ variationId: String(i.variation), quantity: i.quantity }));
+      await restoreStock(items);
+      await Order.updateOne({ _id: order._id }, { stockRestored: true });
+    }
+    return;
+  }
+
   order.payment = { ...order.payment, status: "paid", reference };
   order.status = "confirmed";
   order.statusHistory.push({ from: "pending", to: "confirmed", at: new Date() });
@@ -236,5 +260,59 @@ export async function markOrderFailed(orderId: string, reference: string): Promi
   order.status = "failed";
   order.statusHistory.push({ from: "pending", to: "failed", at: new Date() });
   await order.save();
-  await restoreStock(order.items.map((i) => ({ variationId: String(i.variation), quantity: i.quantity })));
+  // Guard: restore stock only once (FR-013 idempotency).
+  if (!order.stockRestored) {
+    const items = order.items.map((i) => ({ variationId: String(i.variation), quantity: i.quantity }));
+    await restoreStock(items);
+    await Order.updateOne({ _id: order._id }, { stockRestored: true });
+  }
+}
+
+/**
+ * Cron sweep (FR-013): find all pending orders past their `expiresAt`, mark them
+ * `failed`, and release reserved stock. Uses the `stockRestored` flag so each order
+ * is processed at most once even if the sweep runs concurrently or overlaps.
+ */
+export async function expireStaleOrders(): Promise<{ expired: number }> {
+  await connectDB();
+  const now = new Date();
+
+  // Atomically claim orders: update status=failed only for pending+past-expiry+stock-not-yet-restored.
+  // We flip stockRestored=true in the same update to prevent double-release under concurrency.
+  const cursor = Order.find({
+    status: "pending",
+    expiresAt: { $lt: now },
+    stockRestored: false,
+  }).cursor();
+
+  let expired = 0;
+  for await (const order of cursor) {
+    // Double-write guard: use findOneAndUpdate to atomically claim this order.
+    const claimed = await Order.findOneAndUpdate(
+      { _id: order._id, status: "pending", stockRestored: false },
+      {
+        status: "failed",
+        stockRestored: true,
+        $push: {
+          statusHistory: {
+            from: "pending",
+            to: "failed",
+            at: now,
+            note: "auto-expired",
+          },
+        },
+      },
+      { new: true },
+    );
+    if (!claimed) continue; // another process beat us to it — skip
+
+    const items = claimed.items.map((i) => ({
+      variationId: String(i.variation),
+      quantity: i.quantity,
+    }));
+    await restoreStock(items);
+    expired++;
+  }
+
+  return { expired };
 }

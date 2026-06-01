@@ -41,7 +41,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
       }
 
       setSuccess(true);
-    } catch (err) {
+    } catch {
       setBusy(false);
       setError("An unexpected error occurred. Please try again.");
     }

@@ -1,4 +1,4 @@
-import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { Schema, type InferSchemaType } from "mongoose";
 
 /**
  * Authenticated account: admin or buyer (spec FR-016/FR-017/FR-037).

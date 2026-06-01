@@ -31,7 +31,7 @@ export function CustomerTable() {
         const data = await res.json();
         setError(data.error?.message || "Failed to load customer records");
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred loading customers");
     } finally {
       setLoading(false);
@@ -40,6 +40,8 @@ export function CustomerTable() {
 
   useEffect(() => {
     loadCustomers();
+    // Load once on mount; search is triggered explicitly via the search form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleSearchSubmit(e: React.FormEvent) {

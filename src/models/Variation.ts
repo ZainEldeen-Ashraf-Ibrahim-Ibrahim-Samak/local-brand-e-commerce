@@ -1,4 +1,4 @@
-import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { Schema, type InferSchemaType } from "mongoose";
 
 const localized = { en: { type: String, default: "" }, ar: { type: String, default: "" } };
 

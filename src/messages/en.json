@@ -57,6 +57,30 @@
       "failed": "Failed",
       "returned": "Returned",
       "refunded": "Refunded"
+    },
+    "completion": {
+      "incomplete": "Incomplete",
+      "confirmed": "Confirmed",
+      "all": "All Orders"
+    }
+  },
+  "media": {
+    "uploader": {
+      "label": "Upload Image",
+      "dragDrop": "Drag & drop an image here, or click to select",
+      "dragDropMulti": "Drag & drop images here, or click to select",
+      "uploading": "Uploading...",
+      "remove": "Remove",
+      "primary": "Primary",
+      "errors": {
+        "maxSize": "File is too large (maximum size is 5MB)",
+        "invalidFormat": "Unsupported file format (only JPEG, PNG, and WebP are allowed)",
+        "maxCount": "You can upload up to 8 images",
+        "uploadFailed": "Failed to upload image. Please try again."
+      }
+    },
+    "placeholder": {
+      "alt": "No image available"
     }
   },
   "auth": {

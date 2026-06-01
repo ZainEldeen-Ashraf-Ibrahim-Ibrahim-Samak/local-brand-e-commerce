@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const patchSchema = z.object({
   title: localizedTextSchema.optional(),
   subtitle: localizedTextSchema.optional(),
-  image: mediaRefSchema.optional(),
+  image: mediaRefSchema.nullable().optional(),
   ctaLabel: localizedTextSchema.optional(),
   ctaHref: z.string().optional(),
   isActive: z.boolean().optional(),

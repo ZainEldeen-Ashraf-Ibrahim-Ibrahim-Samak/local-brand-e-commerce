@@ -17,6 +17,8 @@ export const mediaRefSchema = z.object({
   cloudinaryId: z.string(),
   version: z.string(),
   alt: localizedTextSchema.optional(),
+  format: z.string().optional(),
+  bytes: z.number().optional(),
 });
 
 /** Canonical order status lifecycle (spec FR-036). */

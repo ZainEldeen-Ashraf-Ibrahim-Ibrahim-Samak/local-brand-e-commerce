@@ -1,9 +1,8 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/services/catalog.service";
 import { VariantPicker } from "@/components/product/VariantPicker";
 import { pickLocale } from "@/lib/shared/types";
-import { mediaUrl } from "@/lib/media/cloudinary";
+import { ImageWithFallback } from "@/components/ui";
 import type { AppLocale } from "@/lib/config/env";
 
 /** Product detail with gallery + variant selection (FR-004/FR-005). */
@@ -18,21 +17,27 @@ export default async function ProductDetailPage({
 
   const name = pickLocale(product.name, locale as AppLocale);
   const description = pickLocale(product.description, locale as AppLocale);
-  const hero = product.images[0] ? mediaUrl(product.images[0], 800) : null;
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div className="space-y-3">
         <div className="relative aspect-square overflow-hidden rounded-token bg-muted">
-          {hero && <Image src={hero} alt={name} fill sizes="(max-width:768px) 100vw, 50vw" className="object-cover" />}
+          <ImageWithFallback
+            image={product.images[0]}
+            alt={name}
+            fill
+            priority
+          />
         </div>
-        <div className="grid grid-cols-4 gap-2">
-          {product.images.slice(1, 5).map((img) => (
-            <div key={img.cloudinaryId} className="relative aspect-square overflow-hidden rounded-token bg-muted">
-              <Image src={mediaUrl(img, 200)} alt={name} fill sizes="25vw" className="object-cover" />
-            </div>
-          ))}
-        </div>
+        {product.images.length > 1 && (
+          <div className="grid grid-cols-4 gap-2">
+            {product.images.slice(1, 5).map((img) => (
+              <div key={img.cloudinaryId} className="relative aspect-square overflow-hidden rounded-token bg-muted">
+                <ImageWithFallback image={img} alt={name} fill />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">

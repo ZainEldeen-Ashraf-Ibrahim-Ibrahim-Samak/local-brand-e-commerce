@@ -41,7 +41,7 @@ export function AccountManager({ currentUserId }: { currentUserId: string }) {
         const data = await res.json();
         setError(data.error?.message || "Failed to load accounts");
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred loading accounts");
     } finally {
       setLoading(false);
@@ -93,7 +93,7 @@ export function AccountManager({ currentUserId }: { currentUserId: string }) {
       }
 
       loadUsers();
-    } catch (err) {
+    } catch {
       setBusy(false);
       setError("An error occurred during account creation");
     }
@@ -119,7 +119,7 @@ export function AccountManager({ currentUserId }: { currentUserId: string }) {
 
       setSuccess(`Account status updated for ${user.name}`);
       loadUsers();
-    } catch (err) {
+    } catch {
       setError("An error occurred updating the account");
     }
   }
@@ -143,7 +143,7 @@ export function AccountManager({ currentUserId }: { currentUserId: string }) {
 
       setSuccess(`Role updated to ${newRole} for ${user.name}`);
       loadUsers();
-    } catch (err) {
+    } catch {
       setError("An error occurred changing the account role");
     }
   }

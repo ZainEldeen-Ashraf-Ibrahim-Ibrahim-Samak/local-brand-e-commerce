@@ -5,3 +5,5 @@ export { Card, CardBody } from "./Card";
 export { Badge } from "./Badge";
 export { Spinner } from "./Spinner";
 export { Modal } from "./Modal";
+export { MediaUploader } from "./MediaUploader";
+export { ImageWithFallback } from "./ImageWithFallback";

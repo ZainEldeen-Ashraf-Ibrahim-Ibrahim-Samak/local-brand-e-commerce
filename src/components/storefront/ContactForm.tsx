@@ -56,7 +56,7 @@ export function ContactForm() {
       } else {
         setStatus("error");
       }
-    } catch (err) {
+    } catch {
       setBusy(false);
       setStatus("error");
     }

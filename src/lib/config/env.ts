@@ -14,6 +14,7 @@ const schema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().optional(),
 
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().optional(),
@@ -31,6 +32,8 @@ const schema = z.object({
 
   NEXT_PUBLIC_DEFAULT_LOCALE: z.enum(["ar", "en"]).default("ar"),
   NEXT_PUBLIC_BASE_URL: z.string().url().default("http://localhost:3000"),
+  ORDER_EXPIRY_MINUTES: z.coerce.number().default(30),
+  CRON_SECRET: z.string().optional(),
 });
 
 let cached: z.infer<typeof schema> | null = null;
