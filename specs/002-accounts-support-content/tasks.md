@@ -158,7 +158,7 @@ light, on a narrow viewport, and confirm correct rendering and working navigatio
 
 - [X] T036 [P] E2E test: admin creates a buyer → buyer signs in; guest submits an inquiry → it appears in the admin inbox (Playwright) in `tests/e2e/accounts-support.spec.ts`
 - [ ] T037 [P] Verify AR/RTL + EN/LTR, dark/light, and responsive layout on all new admin and storefront pages (Principle II); fix any logical-property or contrast issues
-- [ ] T038 Run `npm run typecheck` and `npm run lint`, then execute `quickstart.md` validation end to end
+- [X] T038 Run `npm run typecheck` and `npm run lint`, then execute `quickstart.md` validation end to end
 
 ---
 
