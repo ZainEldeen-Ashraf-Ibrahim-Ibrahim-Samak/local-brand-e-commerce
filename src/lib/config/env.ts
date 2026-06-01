@@ -20,6 +20,7 @@ const schema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
+  SUPPORT_ALERT_EMAIL: z.string().optional(),
 
   WHATSAPP_API_TOKEN: z.string().optional(),
   WHATSAPP_PHONE_ID: z.string().optional(),

@@ -34,8 +34,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
         await connectDB();
-        const user = await User.findOne({ email: parsed.data.email, isActive: true }).select("+passwordHash");
-        if (!user) return null;
+        const user = await User.findOne({ email: parsed.data.email, isActive: true, status: "active" }).select("+passwordHash");
+        if (!user || !user.passwordHash) return null;
         const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!ok) return null;
         return { id: String(user._id), email: user.email, name: user.name, role: user.role as Role };

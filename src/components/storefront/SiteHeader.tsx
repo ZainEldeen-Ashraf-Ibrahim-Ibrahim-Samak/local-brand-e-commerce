@@ -19,6 +19,12 @@ export async function SiteHeader({ settings, locale }: { settings: WebsiteSettin
           <Link href="/products" className="text-fg hover:text-primary">
             {t("products")}
           </Link>
+          <Link href="/about" className="text-fg hover:text-primary">
+            {t("about")}
+          </Link>
+          <Link href="/contact" className="text-fg hover:text-primary">
+            {t("contact")}
+          </Link>
           <Link href="/track" className="text-fg hover:text-primary">
             {t("trackOrder")}
           </Link>

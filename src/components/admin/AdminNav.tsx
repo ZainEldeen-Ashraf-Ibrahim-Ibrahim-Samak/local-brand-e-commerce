@@ -15,6 +15,9 @@ const NAV: Array<{ href: string; label: string }> = [
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/theme", label: "Theme" },
   { href: "/admin/tax-shipping", label: "Tax & Shipping" },
+  { href: "/admin/accounts", label: "Accounts" },
+  { href: "/admin/support", label: "Support" },
+  { href: "/admin/customers", label: "Customers" },
 ];
 
 /** Admin top navigation + sign out (Principle I — reuses the Button primitive). */

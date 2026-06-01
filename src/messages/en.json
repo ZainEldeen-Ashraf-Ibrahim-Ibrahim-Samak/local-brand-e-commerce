@@ -64,5 +64,79 @@
     "logout": "Log out",
     "email": "Email",
     "password": "Password"
+  },
+  "about": {
+    "title": "About Us",
+    "noContent": "No content configured yet."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "formTitle": "Send us a message",
+    "name": "Name",
+    "email": "Email",
+    "whatsapp": "WhatsApp (Optional)",
+    "orderNumber": "Order Number (Optional)",
+    "subject": "Subject",
+    "message": "Message",
+    "submit": "Send Message",
+    "success": "Your message has been sent successfully. We will get back to you soon.",
+    "error": "Failed to send message. Please try again.",
+    "rateLimit": "Too many requests. Please try again later.",
+    "phone": "Phone",
+    "address": "Address",
+    "followUs": "Follow Us",
+    "noContent": "No contact information configured yet."
+  },
+  "admin": {
+    "nav": {
+      "accounts": "Staff Accounts",
+      "support": "Support Inbox",
+      "customers": "Customer Records"
+    },
+    "accounts": {
+      "title": "Staff Accounts",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions",
+      "create": "Create Account",
+      "invite": "Invite via Email",
+      "tempPassword": "Temporary Password",
+      "method": "Provisioning Method",
+      "roleAdmin": "Admin",
+      "roleBuyer": "Buyer (Seller)",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending",
+      "deactivate": "Deactivate",
+      "activate": "Activate",
+      "cannotDeactivateLastAdmin": "Cannot deactivate the last active administrator.",
+      "successCreate": "Account created successfully.",
+      "successUpdate": "Account updated successfully.",
+      "errorDuplicateEmail": "An account with this email already exists."
+    },
+    "support": {
+      "title": "Support Inbox",
+      "statusNew": "New",
+      "statusInProgress": "In Progress",
+      "statusResolved": "Resolved",
+      "updateStatus": "Update Status",
+      "noInquiries": "No inquiries found.",
+      "inquiryDetails": "Inquiry Details",
+      "details": "Details"
+    },
+    "customers": {
+      "title": "Customer Records",
+      "searchPlaceholder": "Search by email, name or WhatsApp...",
+      "name": "Name",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "orderCount": "Orders Count",
+      "totalSpend": "Total Spend",
+      "lastOrderAt": "Last Order At",
+      "orderHistory": "Order History",
+      "noCustomers": "No customer records found."
+    }
   }
 }

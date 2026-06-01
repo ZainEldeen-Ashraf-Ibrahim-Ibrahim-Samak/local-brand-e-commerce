@@ -19,7 +19,7 @@ test.describe("Guest journey", () => {
 
   test("guest can open the order tracking page", async ({ page }) => {
     await page.goto("/en/track");
-    await expect(page.getByRole("button")).toBeVisible();
+    await expect(page.getByRole("button", { name: /look up/i })).toBeVisible();
   });
 
   test("a known order number with wrong email returns a non-revealing result", async ({ request }) => {

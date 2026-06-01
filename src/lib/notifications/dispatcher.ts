@@ -1,8 +1,8 @@
-import nodemailer from "nodemailer";
 import { connectDB } from "@/lib/db/connect";
 import { getEnv } from "@/lib/config/env";
 import { logger } from "@/lib/observability/logger";
 import { NotificationLog } from "@/models/NotificationLog";
+import { sendEmail } from "@/lib/notifications/email";
 
 /**
  * Order notification dispatcher (spec FR-014/FR-015). Sends via email (SMTP) and
@@ -43,20 +43,6 @@ async function withRetry(channel: "email" | "whatsapp", orderId: string, event: 
       if (attempt < MAX_ATTEMPTS - 1) await backoff(attempt);
     }
   }
-}
-
-async function sendEmail(to: string, subject: string, text: string) {
-  const env = getEnv();
-  if (!env.SMTP_HOST) {
-    logger.info("SMTP not configured; skipping email", { to });
-    return;
-  }
-  const transport = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT ?? 587,
-    auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
-  });
-  await transport.sendMail({ from: env.SMTP_FROM ?? env.SMTP_USER, to, subject, text });
 }
 
 async function sendWhatsApp(to: string, message: string) {

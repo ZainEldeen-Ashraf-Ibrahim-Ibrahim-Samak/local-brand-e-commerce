@@ -65,5 +65,79 @@
     "logout": "تسجيل الخروج",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور"
+  },
+  "about": {
+    "title": "من نحن",
+    "noContent": "لم يتم إعداد محتوى بعد."
+  },
+  "contact": {
+    "title": "اتصل بنا",
+    "formTitle": "أرسل لنا رسالة",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "whatsapp": "واتساب (اختياري)",
+    "orderNumber": "رقم الطلب (اختياري)",
+    "subject": "الموضوع",
+    "message": "الرسالة",
+    "submit": "إرسال الرسالة",
+    "success": "تم إرسال رسالتك بنجاح. سنتواصل معك قريباً.",
+    "error": "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى.",
+    "rateLimit": "طلبات كثيرة جداً. يرجى المحاولة لاحقاً.",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "followUs": "تابعنا",
+    "noContent": "لم يتم إعداد معلومات التواصل بعد."
+  },
+  "admin": {
+    "nav": {
+      "accounts": "حسابات الموظفين",
+      "support": "صندوق الدعم",
+      "customers": "سجلات العملاء"
+    },
+    "accounts": {
+      "title": "حسابات الموظفين",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "create": "إنشاء حساب",
+      "invite": "دعوة عبر البريد الإلكتروني",
+      "tempPassword": "كلمة مرور مؤقتة",
+      "method": "طريقة التزويد",
+      "roleAdmin": "مدير",
+      "roleBuyer": "مشتري (بائع)",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "pending": "معلق",
+      "deactivate": "تعطيل",
+      "activate": "تفعيل",
+      "cannotDeactivateLastAdmin": "لا يمكن تعطيل آخر مدير نشط.",
+      "successCreate": "تم إنشاء الحساب بنجاح.",
+      "successUpdate": "تم تحديث الحساب بنجاح.",
+      "errorDuplicateEmail": "يوجد حساب مسجل بهذا البريد الإلكتروني بالفعل."
+    },
+    "support": {
+      "title": "صندوق الدعم",
+      "statusNew": "جديد",
+      "statusInProgress": "قيد المتابعة",
+      "statusResolved": "تم الحل",
+      "updateStatus": "تحديث الحالة",
+      "noInquiries": "لم يتم العثور على استفسارات.",
+      "inquiryDetails": "تفاصيل الاستفسار",
+      "details": "التفاصيل"
+    },
+    "customers": {
+      "title": "سجلات العملاء",
+      "searchPlaceholder": "بحث بالبريد الإلكتروني، الاسم، أو الواتساب...",
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "whatsapp": "واتساب",
+      "orderCount": "عدد الطلبات",
+      "totalSpend": "إجمالي الإنفاق",
+      "lastOrderAt": "آخر طلب في",
+      "orderHistory": "سجل الطلبات",
+      "noCustomers": "لم يتم العثور على سجلات للعملاء."
+    }
   }
 }
