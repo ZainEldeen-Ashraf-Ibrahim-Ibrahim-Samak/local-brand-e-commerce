@@ -16,7 +16,14 @@ import { Category } from "@/models/Category";
 import { Product } from "@/models/Product";
 import { Variation } from "@/models/Variation";
 
-async function ensureSingleton(model: { findOne: Function; create: Function }, defaults: object, label: string) {
+async function ensureSingleton(
+  model: {
+    findOne: (filter: { singleton: string }) => unknown;
+    create: (doc: object) => Promise<unknown>;
+  },
+  defaults: object,
+  label: string
+) {
   const exists = await model.findOne({ singleton: "main" });
   if (exists) {
     console.log(`= ${label} already exists`);
@@ -51,13 +58,18 @@ async function main() {
   const password = process.env.SEED_ADMIN_PASSWORD;
   let adminId: unknown = null;
   if (email && password) {
+    const passwordHash = await bcrypt.hash(password, 10);
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
+      existing.passwordHash = passwordHash;
+      existing.role = "admin";
+      existing.isActive = true;
+      existing.status = "active";
+      await existing.save();
       adminId = existing._id;
-      console.log("= admin user already exists");
+      console.log("= admin user updated (synced password)");
     } else {
-      const passwordHash = await bcrypt.hash(password, 10);
-      const admin = await User.create({ email, passwordHash, role: "admin", name: "Administrator" });
+      const admin = await User.create({ email, passwordHash, role: "admin", name: "Administrator", isActive: true, status: "active" });
       adminId = admin._id;
       console.log(`+ created admin user ${email}`);
     }
