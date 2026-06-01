@@ -81,6 +81,22 @@ export function VariationsEditor({ productId, variations }: { productId: string;
     router.refresh();
   }
 
+  async function setPriceOverride(id: string, valueMajor: string) {
+    const trimmed = valueMajor.trim();
+    // Empty input clears the override (falls back to product base price); a number sets it.
+    const priceOverride = trimmed === "" ? null : Math.round(Number(trimmed) * 100);
+    const res = await fetch(`/api/admin/variations/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ priceOverride }),
+    });
+    if (!res.ok) {
+      setError("Could not update price override");
+      return;
+    }
+    router.refresh();
+  }
+
   async function toggleActive(id: string, isActive: boolean) {
     await fetch(`/api/admin/variations/${id}`, {
       method: "PATCH",
@@ -118,6 +134,21 @@ export function VariationsEditor({ productId, variations }: { productId: string;
                   {!v.isActive && <Badge tone="danger">inactive</Badge>}
                   {v.stock === 0 && <Badge tone="warning">out of stock</Badge>}
                   <label className="ms-auto flex items-center gap-2">
+                    <span className="text-muted-fg">Price</span>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      defaultValue={v.priceMajor}
+                      placeholder="base"
+                      className="h-8 w-24"
+                      title="Price override (leave empty to use the product base price)"
+                      onBlur={(e) => {
+                        if (e.target.value !== v.priceMajor) setPriceOverride(v.id, e.target.value);
+                      }}
+                    />
+                  </label>
+                  <label className="flex items-center gap-2">
                     <span className="text-muted-fg">Stock</span>
                     <Input
                       type="number"

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const schema = z.object({
   sku: z.string().min(1).optional(),
   options: z.record(z.string(), z.string()).optional(),
-  priceOverride: z.number().int().min(0).optional(),
+  priceOverride: z.number().int().min(0).nullable().optional(),
   stock: z.number().int().min(0).optional(),
   image: mediaRefSchema.optional(),
   isActive: z.boolean().optional(),

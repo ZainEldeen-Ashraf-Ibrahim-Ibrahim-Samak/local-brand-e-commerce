@@ -56,7 +56,7 @@ controls on B's row; a draft owned by B does not appear; a direct PATCH to B's p
 
 ### Critical-path test for US1 (write first; must fail before implementation)
 
-- [ ] T003 [P] [US1] Integration test: `listAllPublishedProducts` returns only `published` products across owners with a correct `mine` flag and excludes other owners' drafts/unpublished; and a cross-owner product PATCH still returns 403; and seller order scope (`listOwnOrders`) is unchanged — in `tests/integration/seller.catalog-visibility.test.ts`
+- [X] T003 [P] [US1] Integration test: `listAllPublishedProducts` returns only `published` products across owners with a correct `mine` flag and excludes other owners' drafts/unpublished; and a cross-owner product PATCH still returns 403; and seller order scope (`listOwnOrders`) is unchanged — in `tests/integration/seller.catalog-visibility.test.ts`
 
 ### Implementation for US1
 
@@ -71,8 +71,8 @@ controls on B's row; a draft owned by B does not appear; a direct PATCH to B's p
 
 **Purpose**: Final validation across the new surface
 
-- [ ] T006 [P] Verify the "All products" section and "Mine" badge in AR/RTL + EN/LTR and dark/light, responsive layouts (Principle II); confirm only public fields (name/price) are shown — no order/customer data (SC-303)
-- [ ] T007 Run `npm run typecheck` and `npm run test`, then execute `specs/004-seller-catalog-visibility/quickstart.md` validation end to end (two-seller walkthrough incl. the 403 cross-owner write check and the draft-hidden check)
+- [X] T006 [P] Verify the "All products" section and "Mine" badge in AR/RTL + EN/LTR and dark/light, responsive layouts (Principle II); confirm only public fields (name/price) are shown — no order/customer data (SC-303)
+- [X] T007 Run `npm run typecheck` and `npm run test`, then execute `specs/004-seller-catalog-visibility/quickstart.md` validation end to end (two-seller walkthrough incl. the 403 cross-owner write check and the draft-hidden check)
 
 ---
 

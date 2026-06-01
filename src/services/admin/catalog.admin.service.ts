@@ -34,7 +34,7 @@ export type ProductInput = {
 export type VariationInput = {
   sku: string;
   options?: Record<string, string>;
-  priceOverride?: number;
+  priceOverride?: number | null;
   stock?: number;
   image?: MediaRef;
   isActive?: boolean;
@@ -338,7 +338,8 @@ export async function updateVariation(
 
   if (patch.sku) variation.sku = patch.sku;
   if (patch.options) variation.options = patch.options as never;
-  if (patch.priceOverride != null) variation.priceOverride = patch.priceOverride;
+  // `undefined` = leave unchanged; `null` = clear the override (fall back to base price); number = set.
+  if (patch.priceOverride !== undefined) variation.priceOverride = (patch.priceOverride ?? undefined) as never;
   if (patch.stock != null) variation.stock = patch.stock;
   if (patch.image !== undefined) variation.image = (patch.image ?? null) as never;
   if (patch.isActive != null) variation.isActive = patch.isActive;

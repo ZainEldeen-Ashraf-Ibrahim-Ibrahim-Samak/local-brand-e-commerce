@@ -9,6 +9,7 @@ const schema = z.object({
   items: z.array(z.object({ variationId: z.string(), quantity: z.number().int().min(1) })).min(1),
   shippingOptionId: z.string(),
   couponCode: z.string().optional(),
+  paymentMethod: z.enum(["cod", "card"]).default("cod"),
   customer: z.object({
     email: z.string().email(),
     whatsapp: z.string().min(5),
@@ -32,9 +33,28 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   return handleRoute(async () => {
     const body = schema.parse(await req.json());
+    const env = getEnv();
+
+    // Don't create an order we can't collect payment for: if card is chosen but
+    // no payment gateway is configured, fail before reserving stock.
+    if (body.paymentMethod === "card" && !env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: { code: "payment_unavailable", message: "Card payment is not available; choose cash on delivery." } },
+        { status: 503 },
+      );
+    }
+
     const order = await createPendingOrder(body); // throws OUT_OF_STOCK (409) on conflict
 
-    const env = getEnv();
+    // Cash on delivery: order is confirmed now, no online payment step.
+    if (body.paymentMethod === "cod") {
+      return NextResponse.json({
+        orderId: String(order._id),
+        orderNumber: order.orderNumber,
+        paymentUrl: null,
+      });
+    }
+
     const base = env.NEXT_PUBLIC_BASE_URL;
     const session = await getPaymentProvider().createPaymentSession({
       orderId: String(order._id),
@@ -49,7 +69,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       orderId: String(order._id),
       orderNumber: order.orderNumber,
-      payment: { provider: session.provider, sessionUrl: session.redirectUrl, clientSecret: session.clientSecret },
+      paymentUrl: session.redirectUrl,
     });
   });
 }

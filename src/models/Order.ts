@@ -55,6 +55,7 @@ const orderSchema = new Schema(
     statusHistory: { type: [statusChange], default: [] },
     payment: {
       provider: String,
+      method: { type: String, enum: ["card", "cod"] },
       sessionId: String,
       status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
       reference: String,

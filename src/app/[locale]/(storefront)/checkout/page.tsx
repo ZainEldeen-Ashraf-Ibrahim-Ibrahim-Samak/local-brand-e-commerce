@@ -5,6 +5,7 @@ import { useCart } from "@/lib/cart/useCart";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Input, Card, CardBody, Spinner, Badge } from "@/components/ui";
 import { formatMoney } from "@/lib/format";
+import { pickLocale } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
 import { useParams } from "next/navigation";
 
@@ -18,6 +19,8 @@ type Quote = {
     | null;
 };
 
+type ShippingOption = { id: string; label: { en: string; ar: string }; cost: number; estimatedDays?: number };
+
 /** Checkout: collect customer + shipping, apply coupon, show server-validated totals. */
 export default function CheckoutPage() {
   const params = useParams();
@@ -29,8 +32,24 @@ export default function CheckoutPage() {
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
   const [form, setForm] = useState({ name: "", email: "", whatsapp: "", line1: "", city: "", country: "" });
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [shippingOptionId, setShippingOptionId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "card">("cod");
+  const [error, setError] = useState<string | null>(null);
 
   const itemsKey = JSON.stringify(items.map((i) => ({ v: i.variationId, q: i.quantity })));
+
+  // Load available shipping options once; default to the first.
+  useEffect(() => {
+    fetch("/api/storefront/checkout/options")
+      .then((r) => (r.ok ? r.json() : { shippingOptions: [] }))
+      .then((d) => {
+        const opts: ShippingOption[] = d.shippingOptions ?? [];
+        setShippingOptions(opts);
+        setShippingOptionId((cur) => cur || opts[0]?.id || "");
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchQuote = useCallback(
     async (couponCode?: string) => {
@@ -45,13 +64,14 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({ variationId: i.variationId, quantity: i.quantity })),
+          ...(shippingOptionId ? { shippingOptionId } : {}),
           ...(couponCode ? { code: couponCode } : {}),
         }),
       });
       if (res.ok) setQuote(await res.json());
       setLoading(false);
     },
-    [items, itemsKey], // eslint-disable-line react-hooks/exhaustive-deps
+    [items, itemsKey, shippingOptionId], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   useEffect(() => {
@@ -65,11 +85,14 @@ export default function CheckoutPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     const res = await fetch("/api/storefront/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         items: items.map((i) => ({ variationId: i.variationId, quantity: i.quantity })),
+        shippingOptionId: shippingOptionId || quote?.shippingOption?.id || "",
+        paymentMethod,
         couponCode: appliedCoupon || undefined,
         customer: { name: form.name, email: form.email, whatsapp: form.whatsapp },
         shippingAddress: { line1: form.line1, city: form.city, country: form.country },
@@ -81,6 +104,8 @@ export default function CheckoutPage() {
       if (data.paymentUrl) window.location.href = data.paymentUrl;
       else router.push(`/checkout/success?order=${data.orderNumber}`);
     } else {
+      const data = await res.json().catch(() => null);
+      setError(data?.error?.message ?? "Could not place the order. Please try again.");
       setLoading(false);
     }
   };
@@ -128,8 +153,66 @@ export default function CheckoutPage() {
               onChange={(e) => setForm({ ...form, country: e.target.value })}
               required
             />
-            <Button type="submit" className="w-full" disabled={loading || items.length === 0}>
-              {loading ? <Spinner /> : "Place order"}
+
+            {shippingOptions.length > 0 && (
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-medium text-fg">Shipping method</legend>
+                {shippingOptions.map((o) => (
+                  <label
+                    key={o.id}
+                    className="flex cursor-pointer items-center justify-between gap-3 rounded-token border border-border p-2 text-sm hover:border-primary"
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="shipping"
+                        value={o.id}
+                        checked={shippingOptionId === o.id}
+                        onChange={() => setShippingOptionId(o.id)}
+                      />
+                      <span className="text-fg">
+                        {pickLocale(o.label, locale)}
+                        {o.estimatedDays ? ` · ${o.estimatedDays}d` : ""}
+                      </span>
+                    </span>
+                    <span className="text-muted-fg">{formatMoney(o.cost, locale)}</span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium text-fg">Payment method</legend>
+              <label className="flex cursor-pointer items-center gap-2 rounded-token border border-border p-2 text-sm hover:border-primary">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="cod"
+                  checked={paymentMethod === "cod"}
+                  onChange={() => setPaymentMethod("cod")}
+                />
+                <span className="text-fg">Cash on delivery</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-token border border-border p-2 text-sm hover:border-primary">
+                <input
+                  type="radio"
+                  name="payment"
+                  value="card"
+                  checked={paymentMethod === "card"}
+                  onChange={() => setPaymentMethod("card")}
+                />
+                <span className="text-fg">Pay with card (Visa / Mastercard)</span>
+              </label>
+            </fieldset>
+
+            {error && <p className="text-sm text-danger">{error}</p>}
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || items.length === 0 || (shippingOptions.length > 0 && !shippingOptionId)}
+            >
+              {loading ? <Spinner /> : paymentMethod === "cod" ? "Place order (COD)" : "Pay & place order"}
             </Button>
           </form>
         </CardBody>

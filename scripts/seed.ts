@@ -49,6 +49,8 @@ async function main() {
       shippingOptions: [
         { id: "standard", label: { en: "Standard", ar: "عادي" }, cost: 3000, estimatedDays: 5, isActive: true },
         { id: "express", label: { en: "Express", ar: "سريع" }, cost: 7000, estimatedDays: 2, isActive: true },
+        { id: "delivery", label: { en: "Home Delivery", ar: "توصيل للمنزل" }, cost: 5000, estimatedDays: 3, isActive: true },
+        { id: "pickup", label: { en: "Store Pickup", ar: "استلام من المتجر" }, cost: 0, estimatedDays: 1, isActive: true },
       ],
     },
     "TaxShippingPolicy",

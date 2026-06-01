@@ -119,6 +119,8 @@ export type CreateOrderInput = {
   items: CartItemInput[];
   shippingOptionId: string;
   couponCode?: string;
+  /** "cod" = cash on delivery (no online payment); "card" = pay online (default). */
+  paymentMethod?: "cod" | "card";
   customer: { email: string; whatsapp: string; name: string };
   shippingAddress: {
     line1: string;
@@ -157,6 +159,7 @@ export async function createPendingOrder(input: CreateOrderInput): Promise<Order
     };
   });
 
+  const isCod = input.paymentMethod === "cod";
   const { ORDER_EXPIRY_MINUTES } = getEnv();
   const expiresAt = new Date(Date.now() + ORDER_EXPIRY_MINUTES * 60_000);
 
@@ -176,14 +179,20 @@ export async function createPendingOrder(input: CreateOrderInput): Promise<Order
         cost: priced.shippingOption?.cost,
       },
       grandTotal: priced.totals.grandTotal,
-      status: "pending",
-      statusHistory: [{ to: "pending", at: new Date() }],
-      payment: { status: "pending" },
-      expiresAt,
+      // COD orders are accepted immediately (payment collected on delivery);
+      // card orders stay pending until paid and expire if abandoned.
+      status: isCod ? "confirmed" : "pending",
+      statusHistory: isCod
+        ? [{ to: "confirmed", at: new Date(), note: "cash on delivery" }]
+        : [{ to: "pending", at: new Date() }],
+      payment: { method: isCod ? "cod" : "card", status: "pending" },
+      ...(isCod ? {} : { expiresAt }),
       stockRestored: false,
     });
     // Count the redemption once the order is persisted (atomic; respects usage limit).
     if (appliedCouponCode) await redeemCoupon(appliedCouponCode);
+    // COD orders are confirmed now → notify the customer immediately.
+    if (isCod) await notify(order, "confirmed");
     return order as OrderDoc & { _id: unknown };
   } catch (err) {
     // Order persist failed after reserving — release the stock we took.
