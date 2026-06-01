@@ -164,15 +164,15 @@ in storefront), and advance an order's status (reflected in tracking).
 ### Implementation for US3 (contracts/admin-api.md)
 
 - [X] T056 [US3] Implement admin catalog service (CRUD products/variations/categories, publish/unpublish, cache invalidation) in `src/services/admin/catalog.admin.service.ts`
-- [ ] T057 [P] [US3] Implement admin product/variation/category endpoints under `src/app/api/admin/products/`, `src/app/api/admin/variations/`, `src/app/api/admin/categories/`
-- [ ] T058 [P] [US3] Implement signed media upload endpoint `POST /api/admin/media/sign` in `src/app/api/admin/media/sign/route.ts`
-- [ ] T059 [US3] Implement stock-adjust endpoint `PATCH /api/admin/variations/[id]/stock` (logged) in `src/app/api/admin/variations/[id]/stock/route.ts`
-- [ ] T060 [US3] Implement admin order endpoints (list, detail, validated status transition) under `src/app/api/admin/orders/`
-- [ ] T061 [P] [US3] Implement dashboard summary endpoint `GET /api/admin/dashboard` (sales + inventory) in `src/app/api/admin/dashboard/route.ts`
-- [ ] T062 [US3] Build admin layout + auth-gated shell in `src/app/[locale]/(admin)/admin/layout.tsx`
-- [ ] T063 [P] [US3] Build admin product/category management UI (forms reuse `components/ui`) in `src/components/admin/catalog/` and `src/app/[locale]/(admin)/admin/products/`
-- [ ] T064 [P] [US3] Build admin orders UI (list, detail, status transitions) in `src/app/[locale]/(admin)/admin/orders/`
-- [ ] T065 [P] [US3] Build admin dashboard UI (sales/inventory widgets) in `src/app/[locale]/(admin)/admin/page.tsx`
+- [X] T057 [P] [US3] Implement admin product/variation/category endpoints under `src/app/api/admin/products/`, `src/app/api/admin/variations/`, `src/app/api/admin/categories/`
+- [X] T058 [P] [US3] Implement signed media upload endpoint `POST /api/admin/media/sign` in `src/app/api/admin/media/sign/route.ts`
+- [X] T059 [US3] Implement stock-adjust endpoint `PATCH /api/admin/variations/[id]/stock` (logged) in `src/app/api/admin/variations/[id]/stock/route.ts`
+- [X] T060 [US3] Implement admin order endpoints (list, detail, validated status transition) under `src/app/api/admin/orders/`
+- [X] T061 [P] [US3] Implement dashboard summary endpoint `GET /api/admin/dashboard` (sales + inventory) in `src/app/api/admin/dashboard/route.ts`
+- [X] T062 [US3] Build admin layout + auth-gated shell in `src/app/[locale]/(admin)/admin/layout.tsx`
+- [X] T063 [P] [US3] Build admin product/category management UI (forms reuse `components/ui`) in `src/components/admin/catalog/` and `src/app/[locale]/(admin)/admin/products/`
+- [X] T064 [P] [US3] Build admin orders UI (list, detail, status transitions) in `src/app/[locale]/(admin)/admin/orders/`
+- [X] T065 [P] [US3] Build admin dashboard UI (sales/inventory widgets) in `src/app/[locale]/(admin)/admin/page.tsx`
 
 **Checkpoint**: Admins can stock the store and fulfill orders.
 
