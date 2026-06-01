@@ -4,6 +4,7 @@ import { useState, useRef, type ChangeEvent, type DragEvent } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/shared/cn";
 import { Spinner } from "./Spinner";
+import { mediaUrl } from "@/lib/media/cloudinary-url";
 import type { MediaRef } from "@/lib/shared/types";
 
 interface MediaUploaderProps {
@@ -271,7 +272,7 @@ export function MediaUploader({
             const isPrimary = index === 0;
             // Construct a Cloudinary fetch URL using the stored public_id + version.
             // next/image is avoided here as dimensions are dynamic per upload.
-            const displayUrl = `https://res.cloudinary.com/dptx6h4qy/image/upload/f_auto,q_auto,w_300/v${item.version}/${item.cloudinaryId}`;
+            const displayUrl = mediaUrl(item, 300);
 
             return (
               <div
@@ -295,7 +296,7 @@ export function MediaUploader({
                     }}
                   />
                   {isPrimary && multiple && (
-                    <span className="absolute top-2 left-2 rounded bg-primary px-1.5 py-0.5 text-2xs font-semibold text-primary-fg uppercase tracking-wider">
+                    <span className="absolute top-2 start-2 rounded bg-primary px-1.5 py-0.5 text-2xs font-semibold text-primary-fg uppercase tracking-wider">
                       {t("primary")}
                     </span>
                   )}

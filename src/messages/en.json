@@ -17,6 +17,9 @@
   "nav": {
     "home": "Home",
     "products": "Products",
+    "categories": "Categories",
+    "allProducts": "All products",
+    "viewAll": "View all",
     "trackOrder": "Track order",
     "about": "About",
     "contact": "Contact",

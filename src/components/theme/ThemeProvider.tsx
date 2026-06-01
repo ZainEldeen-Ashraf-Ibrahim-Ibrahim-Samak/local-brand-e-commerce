@@ -5,7 +5,12 @@ import type { ReactNode } from "react";
 
 /**
  * Dark/light theme provider (next-themes). Both palettes derive from the same
- * design tokens (Principle II). `defaultTheme` comes from admin ThemeSettings.
+ * design tokens (Principle II). `defaultMode` comes from admin ThemeSettings.
+ *
+ * We use `forcedTheme` instead of `defaultTheme` so the admin-configured value
+ * always wins, even when the browser has a stale value in localStorage from a
+ * previous session. The storageKey encodes the chosen mode so changing it in the
+ * admin panel abandons the old key and starts fresh.
  */
 export function ThemeProvider({
   children,
@@ -15,7 +20,13 @@ export function ThemeProvider({
   defaultMode?: "light" | "dark";
 }) {
   return (
-    <NextThemesProvider attribute="class" defaultTheme={defaultMode} enableSystem={false} disableTransitionOnChange>
+    <NextThemesProvider
+      attribute="class"
+      forcedTheme={defaultMode}
+      storageKey={`theme-${defaultMode}`}
+      enableSystem={false}
+      disableTransitionOnChange
+    >
       {children}
     </NextThemesProvider>
   );

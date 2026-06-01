@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/services/catalog.service";
-import { VariantPicker } from "@/components/product/VariantPicker";
+import { ProductDetailClient } from "@/components/product/ProductDetailClient";
 import { pickLocale } from "@/lib/shared/types";
-import { ImageWithFallback } from "@/components/ui";
 import type { AppLocale } from "@/lib/config/env";
 
-/** Product detail with gallery + variant selection (FR-004/FR-005). */
+/** Product detail with gallery + variant selection (FR-004/FR-005/FR-202b). */
 export default async function ProductDetailPage({
   params,
 }: {
@@ -19,32 +18,9 @@ export default async function ProductDetailPage({
   const description = pickLocale(product.description, locale as AppLocale);
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      <div className="space-y-3">
-        <div className="relative aspect-square overflow-hidden rounded-token bg-muted">
-          <ImageWithFallback
-            image={product.images[0]}
-            alt={name}
-            fill
-            priority
-          />
-        </div>
-        {product.images.length > 1 && (
-          <div className="grid grid-cols-4 gap-2">
-            {product.images.slice(1, 5).map((img) => (
-              <div key={img.cloudinaryId} className="relative aspect-square overflow-hidden rounded-token bg-muted">
-                <ImageWithFallback image={img} alt={name} fill />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-fg">{name}</h1>
-        <p className="whitespace-pre-line text-muted-fg">{description}</p>
-        <VariantPicker product={product} locale={locale as AppLocale} />
-      </div>
+    <div className="space-y-6">
+      <ProductDetailClient product={product} locale={locale as AppLocale} name={name} />
+      <p className="whitespace-pre-line text-muted-fg">{description}</p>
     </div>
   );
 }

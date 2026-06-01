@@ -1,7 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { ProductCard } from "@/components/product/ProductCard";
 import { FilterPanel } from "@/components/product/FilterPanel";
-import { listProducts, type CatalogQuery } from "@/services/catalog.service";
+import { listProducts, listCategoryTree, type CatalogQuery } from "@/services/catalog.service";
+import { pickLocale } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,14 @@ export default async function ProductsPage({
     sort: sp.sort as CatalogQuery["sort"],
     page: sp.page ? Number(sp.page) : 1,
   };
-  const { items, total, facets } = await listProducts(query);
+  const [{ items, total, facets }, categoryTree] = await Promise.all([
+    listProducts(query),
+    listCategoryTree(),
+  ]);
+  const categories = categoryTree.map((c) => ({
+    slug: c.slug,
+    label: pickLocale(c.name, locale as AppLocale) || c.slug,
+  }));
 
   return (
     <div className="space-y-6">
@@ -37,7 +45,7 @@ export default async function ProductsPage({
         <span className="text-sm text-muted-fg">{total}</span>
       </div>
 
-      <FilterPanel sizes={facets.sizes} colors={facets.colors} />
+      <FilterPanel sizes={facets.sizes} colors={facets.colors} categories={categories} />
 
       {items.length === 0 ? (
         <p className="py-12 text-center text-muted-fg">—</p>

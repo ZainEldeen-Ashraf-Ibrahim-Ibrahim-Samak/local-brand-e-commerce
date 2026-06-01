@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Input, Card, CardBody, Badge, MediaUploader } from "@/components/ui";
+import { mediaUrl } from "@/lib/media/cloudinary-url";
 import type { MediaRef } from "@/lib/shared/types";
 
 export type ManagedCategory = {
@@ -14,7 +15,12 @@ export type ManagedCategory = {
   image?: MediaRef | null;
 };
 
-/** Create/list/delete/edit categories (FR-018, FR-203). */
+/**
+ * Create/list/delete/edit categories (FR-018, FR-203).
+ * All mutations go through /api/admin/categories which requires requireRole("admin") — this
+ * component is only rendered inside the admin layout and its action buttons carry
+ * data-testid="admin-action" for test verification (T033).
+ */
 export function CategoryManager({ categories }: { categories: ManagedCategory[] }) {
   const router = useRouter();
   const [nameEn, setNameEn] = useState("");
@@ -95,10 +101,16 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
   return (
     <Card>
       <CardBody className="space-y-6">
+        {/* T033: admin-only badge makes the scope explicit in the UI */}
+        <div className="flex items-center gap-2">
+          <h2 className="text-base font-semibold text-fg">Categories</h2>
+          <Badge tone="warning">Admin only</Badge>
+        </div>
+
         {categories.length === 0 ? (
           <p className="text-sm text-muted-fg">No categories yet.</p>
         ) : (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-border" data-testid="category-list">
             {categories.map((c) => (
               <li key={c.id} className="flex items-center justify-between py-3 text-sm">
                 <div className="flex items-center gap-3">
@@ -106,7 +118,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
                     <div className="h-10 w-10 overflow-hidden rounded bg-muted">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={`https://res.cloudinary.com/dptx6h4qy/image/upload/f_auto,q_auto,w_80/v${c.image.version}/${c.image.cloudinaryId}`}
+                        src={mediaUrl(c.image, 80)}
                         alt={c.nameEn}
                         className="h-full w-full object-cover"
                         onError={(e) => {
@@ -127,14 +139,15 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
                     <span className="text-xs text-muted-fg">/{c.slug}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                {/* T033: data-testid marks these as admin-only affordances */}
+                <div className="flex items-center gap-2" data-testid="admin-action">
                   <Button variant="outline" size="sm" onClick={() => toggleActive(c.id)}>
                     {c.isActive ? "Deactivate" : "Activate"}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => startEdit(c)}>
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => remove(c.id)}>
+                  <Button variant="danger" size="sm" onClick={() => remove(c.id)}>
                     Delete
                   </Button>
                 </div>
@@ -143,7 +156,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
           </ul>
         )}
 
-        <form onSubmit={handleSubmit} className="border-t border-border pt-4 space-y-4">
+        <form onSubmit={handleSubmit} className="border-t border-border pt-4 space-y-4" data-testid="admin-category-form">
           <h3 className="text-sm font-semibold text-fg">
             {editingId ? "Edit Category" : "Add New Category"}
           </h3>

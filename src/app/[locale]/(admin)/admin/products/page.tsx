@@ -3,6 +3,7 @@ import { listAdminProducts, listAdminCategories } from "@/services/admin/catalog
 import { Card, CardBody, Badge, Button } from "@/components/ui";
 import { formatMoney } from "@/lib/format";
 import { pickLocale } from "@/lib/shared/types";
+import { mediaUrl } from "@/lib/media/cloudinary-url";
 import type { AppLocale } from "@/lib/config/env";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function AdminProductsPage({ params }: { params: Promise<{ 
             <table className="w-full text-start text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-fg">
+                  <th className="py-2 text-start font-medium w-12"></th>
                   <th className="py-2 text-start font-medium">Name</th>
                   <th className="py-2 text-start font-medium">Category</th>
                   <th className="py-2 text-start font-medium">Price</th>
@@ -40,7 +42,26 @@ export default async function AdminProductsPage({ params }: { params: Promise<{ 
               </thead>
               <tbody>
                 {items.map((p) => (
-                  <tr key={p.id} className="border-b border-border">
+                  <tr key={p.id} className="border-b border-border hover:bg-muted/40 transition-colors">
+                    <td className="py-2 pe-2">
+                      {/* Thumbnail from first product image */}
+                      <div className="h-10 w-10 overflow-hidden rounded bg-muted flex-shrink-0">
+                        {p.firstImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={mediaUrl(p.firstImage, 80)}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-fg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v13.5a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td className="py-2">
                       <Link href={`/admin/products/${p.id}`} className="font-medium text-fg hover:text-primary">
                         {pickLocale(p.name, loc) || p.slug}

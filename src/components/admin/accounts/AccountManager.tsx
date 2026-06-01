@@ -285,14 +285,14 @@ export function AccountManager({ currentUserId }: { currentUserId: string }) {
                   <span className="text-sm text-muted-fg">No staff accounts found.</span>
                 </div>
               ) : (
-                <table className="w-full text-left text-sm border-collapse">
+                <table className="w-full text-start text-sm border-collapse">
                   <thead>
                     <tr className="border-b border-border text-muted-fg font-medium">
                       <th className="py-2 px-3">Name</th>
                       <th className="py-2 px-3">Email</th>
                       <th className="py-2 px-3">Role</th>
                       <th className="py-2 px-3">Status</th>
-                      <th className="py-2 px-3 text-right">Actions</th>
+                      <th className="py-2 px-3 text-end">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -326,7 +326,7 @@ export function AccountManager({ currentUserId }: { currentUserId: string }) {
                               {u.status}
                             </Badge>
                           </td>
-                          <td className="py-3 px-3 text-right">
+                          <td className="py-3 px-3 text-end">
                             <Button
                               variant="outline"
                               size="sm"

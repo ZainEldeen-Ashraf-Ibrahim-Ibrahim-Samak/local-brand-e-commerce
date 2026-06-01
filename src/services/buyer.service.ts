@@ -59,6 +59,27 @@ export async function listOwnProducts(ownerUserId: string): Promise<
   }));
 }
 
+/**
+ * Read-only catalog view for a seller: every published product from any owner,
+ * with a `mine` flag so the UI can mark the seller's own. Editing remains
+ * own-only (FR-029 / Constitution Principle IV) — this grants visibility, not
+ * control, and exposes only public catalog data (no cross-seller orders).
+ */
+export async function listAllPublishedProducts(viewerUserId: string): Promise<
+  Array<{ id: string; slug: string; name: LocalizedText; status: string; basePrice: number; mine: boolean }>
+> {
+  await connectDB();
+  const docs = await Product.find({ status: "published" }).sort({ createdAt: -1 }).lean();
+  return docs.map((d: ProductDoc & { _id: unknown; ownerUserId: unknown }) => ({
+    id: String(d._id),
+    slug: d.slug,
+    name: d.name as LocalizedText,
+    status: d.status,
+    basePrice: d.basePrice,
+    mine: String(d.ownerUserId) === viewerUserId,
+  }));
+}
+
 export async function createOwnProduct(input: BuyerProductInput, ownerUserId: string): Promise<ProductDoc> {
   await connectDB();
   const slug = await uniqueSlug(input.slug || input.name.en || input.name.ar);

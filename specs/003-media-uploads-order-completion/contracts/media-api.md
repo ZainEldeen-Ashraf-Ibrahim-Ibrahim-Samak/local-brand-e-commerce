@@ -37,7 +37,17 @@ Helper: `validateUploadMeta({ format, bytes })` in `lib/media/cloudinary.ts`.
   **422** `{ "error": { "code": "image_required", "message": "Publish requires at least one image" } }`.
 - On update, any image present before and absent after is deleted from Cloudinary immediately (FR-208).
 
+### Variations — `POST /api/admin/products/[id]/variations`, `PATCH /api/admin/variations/[id]`
+- Accept a single optional `image: MediaRef` (already in the route schema). Validated via
+  `validateUploadMeta`; the variation image is independent of the product's 8-image cap.
+- Replacing or clearing the image deletes the prior asset immediately (FR-208).
+- Admin-only (`requireRole("admin")`), already enforced.
+- Storefront: `ProductDetailDTO.variations[]` exposes each variation's `image`; selecting a variation
+  with an image makes it the featured image, else the gallery falls back to `Product.images[0]` (FR-202b).
+
 ### Categories — `POST /api/admin/categories`, `PATCH /api/admin/categories/[id]`
+- **Admin-only** (`requireRole("admin")`, already enforced) — buyers cannot create/edit/delete categories
+  (FR-203).
 - Accept `image: MediaRef | null`. Replacing or clearing it deletes the prior asset.
 
 ### Offers — `POST /api/admin/offers`, `PATCH /api/admin/offers/[id]`, `DELETE /api/admin/offers/[id]`

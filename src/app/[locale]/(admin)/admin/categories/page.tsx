@@ -9,7 +9,14 @@ export default async function AdminCategoriesPage() {
   const categories = await listAdminCategories();
   const managed: ManagedCategory[] = categories.map((c) => {
     const name = c.name as LocalizedText;
-    return { id: c.id, nameEn: name.en, nameAr: name.ar, slug: c.slug, isActive: c.isActive };
+    return {
+      id: c.id,
+      nameEn: name.en,
+      nameAr: name.ar,
+      slug: c.slug,
+      isActive: c.isActive,
+      image: c.image ?? null,
+    };
   });
 
   return (

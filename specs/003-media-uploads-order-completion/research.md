@@ -99,11 +99,41 @@ Technical Context is inherited from `001-ecommerce-platform`; no NEEDS CLARIFICA
   a badge/filter in the admin orders page reusing the existing `statusTone` styling.
 - **Rationale**: Operators must separate noise (abandoned) from real orders; reuses existing status UI.
 
+## R9 — Per-variation image + storefront featured-image swap (FR-202a/b, SC-208)
+
+- **Decision**: Reuse `MediaUploader` in **single-image** mode inside `VariationsEditor` for an optional
+  one-image-per-variation. The data layer already supports this: `Variation.image` exists and both
+  variation routes (`POST /api/admin/products/[id]/variations`, `PATCH /api/admin/variations/[id]`)
+  already accept `image: MediaRef`. Gaps to close: (1) `addVariation`/`updateVariation` in
+  `catalog.admin.service` re-validate the image via `validateUploadMeta` and call `destroyAsset` on the
+  prior `cloudinaryId` when an image is replaced or cleared (FR-208); (2) `catalog.service` exposes the
+  variation `image` on `ProductDetailDTO`; (3) the storefront lifts variation selection so the product
+  detail gallery shows the selected variation's image as the featured image, falling back to the product
+  gallery (index 0) when the variation has none (FR-202b). The variation image is stored separately and
+  does **not** count against the product's 8-image cap.
+- **Rationale**: One uploader for every surface (Principle I); no schema change; the "pick a color → see
+  that color" swap is the standard storefront behavior and is purely client-side over the existing DTO.
+- **Alternatives considered**: A per-variation gallery (rejected per clarification — one representative
+  image suffices); counting variation images in the product's 8-cap (rejected — they are independent);
+  swapping via a server round-trip on selection (rejected — image is already in the DTO, swap is local).
+
+## R10 — Category management authorization (FR-203)
+
+- **Decision**: Category create/rename/set-image/delete remain **admin-only**; buyers never mutate
+  categories. This is already enforced — every `/api/admin/categories` and `/api/admin/categories/[id]`
+  handler calls `requireRole("admin")` server-side (Principle III/IV). No code change is required; this
+  feature only records and preserves the invariant (and must not relax it when wiring the category image).
+- **Rationale**: Categories are shared taxonomy; central admin control prevents duplicate/conflicting
+  categories across sellers. Server-side role enforcement is authoritative.
+- **Alternatives considered**: Letting buyers manage categories like their products (rejected — risks
+  taxonomy fragmentation); client-only role hiding (rejected — bypassable, violates Principle III).
+
 ## Summary of new/changed surfaces
 
 | Area | New | Modified |
 |------|-----|----------|
-| Media | `MediaUploader`, `ImageWithFallback`, `destroyAsset`, `validateUploadMeta` | ProductForm, CategoryManager, OffersManager, product/category/offer routes+services, HomeSlider/ProductCard |
+| Media | `MediaUploader`, `ImageWithFallback`, `destroyAsset`, `validateUploadMeta` | ProductForm, VariationsEditor, CategoryManager, OffersManager, product/variation/category/offer routes+services, HomeSlider/ProductCard |
+| Storefront variation swap | — | VariantPicker, product detail page gallery, `catalog.service` ProductDetailDTO (variation `image`) |
 | Orders | `expireStaleOrders()`, `/api/cron/expire-orders` | Order model (+expiresAt,+stockRestored), order.service (create/confirm), admin orders route+page |
 
 **Output**: All decisions resolved; no remaining unknowns. Proceed to Phase 1.

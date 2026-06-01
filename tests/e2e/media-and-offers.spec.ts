@@ -2,13 +2,11 @@ import { test, expect } from "@playwright/test";
 
 /**
  * E2E: Media uploads & offers homepage (T024, FR-024, Principle I).
+ * Extended with T034: variation image swap & admin-only affordances.
  *
  * Requires:
  *   - A running dev server (npx next dev)
  *   - E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD env vars for authenticated flows
- *
- * Unauthenticated checks run unconditionally. Authenticated upload/create
- * flows are skipped unless credentials are provided.
  */
 
 const email = process.env.E2E_ADMIN_EMAIL;
@@ -18,16 +16,13 @@ const password = process.env.E2E_ADMIN_PASSWORD;
 test.describe("Homepage slider", () => {
   test("renders the slider section (or the empty-state placeholder)", async ({ page }) => {
     await page.goto("/en");
-    // Either the slider section or the empty-state section must be present.
     const slider = page.locator("section").first();
     await expect(slider).toBeVisible();
   });
 
   test("zero-slides empty-state is accessible (has aria-label)", async ({ page }) => {
     await page.goto("/en");
-    // If the no-slides empty-state is rendered it must have the aria-label we added.
     const emptySlider = page.locator('[aria-label="No active slides"]');
-    // Only assert if it's actually present — the page may have real slides in CI.
     const count = await emptySlider.count();
     if (count > 0) {
       await expect(emptySlider).toBeVisible();
@@ -39,14 +34,7 @@ test.describe("Homepage slider", () => {
 test.describe("Product catalog image fallback", () => {
   test("product listing renders without broken images", async ({ page }) => {
     await page.goto("/en/products");
-    // Wait for content to load (may be empty in CI — just check page status)
     await expect(page).not.toHaveURL(/error/);
-    // There should be no uncaught 404 img errors visible on the page
-    const errorImages = page
-      .locator("img[src^='data:image/svg+xml']")
-      .first();
-    // Either no fallback SVGs (real images loaded) OR at least one graceful fallback
-    // — both are valid. The test ensures the page didn't hard-crash.
     await expect(page.locator("body")).not.toContainText("Internal Server Error");
   });
 });
@@ -73,7 +61,6 @@ test.describe("Admin offer management", () => {
     await page.getByRole("button", { name: /sign in/i }).click();
 
     await page.goto("/en/admin/offers");
-    // The MediaUploader's drop zone or the Add Slide button must be present
     const form = page.locator("form").filter({ hasText: /add new slide/i });
     await expect(form).toBeVisible();
   });
@@ -85,9 +72,73 @@ test.describe("Admin offer management", () => {
     await page.getByRole("button", { name: /sign in/i }).click();
 
     await page.goto("/en/admin/orders");
-    // The completion-stage filter tabs must be rendered
     await expect(page.getByRole("tab", { name: /pending/i })).toBeVisible();
     await expect(page.getByRole("tab", { name: /completed/i })).toBeVisible();
     await expect(page.getByRole("tab", { name: /failed/i })).toBeVisible();
+  });
+});
+
+// ── T034: Variation image swap (SC-208 / FR-202b) ────────────────────────────
+test.describe("Variation image swap (T034 / SC-208)", () => {
+  test("product detail page renders without errors", async ({ page }) => {
+    await page.goto("/en/products");
+    await expect(page.locator("body")).not.toContainText("Internal Server Error");
+
+    const productLinks = page.locator("a[href*='/products/']");
+    if (await productLinks.count() === 0) return;
+
+    await productLinks.first().click();
+    await expect(page.locator("body")).not.toContainText("Internal Server Error");
+    // Gallery container must exist
+    const gallery = page.locator(".aspect-square").first();
+    await expect(gallery).toBeVisible();
+  });
+
+  test("selecting a variation does not crash the page (SC-208)", async ({ page }) => {
+    await page.goto("/en/products");
+    const productLinks = page.locator("a[href*='/products/']");
+    if (await productLinks.count() === 0) return;
+
+    await productLinks.first().click();
+    await expect(page.locator("body")).not.toContainText("Internal Server Error");
+
+    const variationButtons = page.locator("button.rounded-token");
+    const btnCount = await variationButtons.count();
+    if (btnCount > 1) {
+      await variationButtons.nth(1).click();
+      await expect(page.locator("body")).not.toContainText("Internal Server Error");
+    }
+  });
+});
+
+// ── T033/T034: Admin-only category & variation affordances ───────────────────
+test.describe("Admin-only affordances (T033/T034)", () => {
+  test.skip(!email || !password, "set E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD to run admin E2E");
+
+  test("categories page shows Admin-only badge (T033)", async ({ page }) => {
+    await page.goto("/en/login");
+    await page.getByLabel(/email/i).fill(email!);
+    await page.getByLabel(/password/i).fill(password!);
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await page.goto("/en/admin/categories");
+    await expect(page.getByText("Admin only")).toBeVisible();
+    await expect(page.locator('[data-testid="admin-category-form"]')).toBeVisible();
+  });
+
+  test("product edit page has variation Add button with image uploader (T031/T034)", async ({ page }) => {
+    await page.goto("/en/login");
+    await page.getByLabel(/email/i).fill(email!);
+    await page.getByLabel(/password/i).fill(password!);
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await page.goto("/en/admin/products");
+    const productLinks = page.locator("a[href*='/admin/products/']");
+    if (await productLinks.count() === 0) return;
+
+    await productLinks.first().click();
+    await expect(page.getByRole("button", { name: /add variation/i })).toBeVisible();
+    // The variation image section label should exist
+    await expect(page.getByText(/variation image/i).first()).toBeVisible();
   });
 });

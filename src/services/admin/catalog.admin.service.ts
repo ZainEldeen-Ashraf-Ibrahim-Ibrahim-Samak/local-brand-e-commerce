@@ -209,6 +209,7 @@ export async function listAdminProducts(query: AdminProductQuery): Promise<{
     basePrice: number;
     category: string;
     variationCount: number;
+    firstImage: { cloudinaryId: string; version: string } | null;
   }>;
   page: number;
   pageSize: number;
@@ -239,15 +240,22 @@ export async function listAdminProducts(query: AdminProductQuery): Promise<{
   const countMap = new Map(counts.map((c) => [String(c._id), c.count]));
 
   return {
-    items: docs.map((d) => ({
-      id: String(d._id),
-      slug: d.slug,
-      name: d.name as LocalizedText,
-      status: d.status,
-      basePrice: d.basePrice,
-      category: String(d.category),
-      variationCount: countMap.get(String(d._id)) ?? 0,
-    })),
+    items: docs.map((d) => {
+      const rawImg = d.images?.[0] as { cloudinaryId?: string | null; version?: string | null } | undefined;
+      return {
+        id: String(d._id),
+        slug: d.slug,
+        name: d.name as LocalizedText,
+        status: d.status,
+        basePrice: d.basePrice,
+        category: String(d.category),
+        variationCount: countMap.get(String(d._id)) ?? 0,
+        firstImage:
+          rawImg?.cloudinaryId && rawImg?.version
+            ? { cloudinaryId: rawImg.cloudinaryId, version: rawImg.version }
+            : null,
+      };
+    }),
     page,
     pageSize,
     total,
@@ -274,6 +282,17 @@ export async function addVariation(productId: string, input: VariationInput): Pr
   await connectDB();
   const product = await Product.findById(productId);
   if (!product) throw Errors.notFound("Product");
+
+  // T029: validate optional variation image (FR-202a / SC-207)
+  if (input.image) {
+    const raw = input.image as MediaRef & { format?: string; bytes?: number };
+    if (raw.format || raw.bytes !== undefined) {
+      if (!validateUploadMeta({ format: raw.format, bytes: raw.bytes })) {
+        throw new AppError("VALIDATION", "Invalid variation image format or size", 422);
+      }
+    }
+  }
+
   const variation = await Variation.create({
     product: productId,
     sku: input.sku,
@@ -294,11 +313,34 @@ export async function updateVariation(
   await connectDB();
   const variation = await Variation.findById(id);
   if (!variation) throw Errors.notFound("Variation");
+
+  // T029: validate new image and destroy the prior asset on replace/clear (FR-202a/FR-208)
+  if (patch.image !== undefined) {
+    const newImg = patch.image;
+    // Validate incoming image if format/bytes are provided
+    if (newImg) {
+      const raw = newImg as MediaRef & { format?: string; bytes?: number };
+      if (raw.format || raw.bytes !== undefined) {
+        if (!validateUploadMeta({ format: raw.format, bytes: raw.bytes })) {
+          throw new AppError("VALIDATION", "Invalid variation image format or size", 422);
+        }
+      }
+    }
+    // Destroy the prior asset if it differs from the incoming one (or is being cleared)
+    const oldId = (variation.image as (MediaRef & { cloudinaryId?: string }) | undefined)?.cloudinaryId;
+    const newId = newImg?.cloudinaryId;
+    if (oldId && oldId !== newId) {
+      destroyAsset(oldId).then((success) => {
+        if (!success) logger.error(`[Cloudinary Retry] Failed to delete variation asset: ${oldId}`);
+      });
+    }
+  }
+
   if (patch.sku) variation.sku = patch.sku;
   if (patch.options) variation.options = patch.options as never;
   if (patch.priceOverride != null) variation.priceOverride = patch.priceOverride;
   if (patch.stock != null) variation.stock = patch.stock;
-  if (patch.image) variation.image = patch.image as never;
+  if (patch.image !== undefined) variation.image = (patch.image ?? null) as never;
   if (patch.isActive != null) variation.isActive = patch.isActive;
   await variation.save();
   await invalidateCatalogCache();
@@ -334,18 +376,31 @@ export async function adjustStock(
 // ---- Categories -----------------------------------------------------------
 
 export async function listAdminCategories(): Promise<
-  Array<{ id: string; slug: string; name: LocalizedText; parent: string | null; isActive: boolean; sortOrder: number }>
+  Array<{ id: string; slug: string; name: LocalizedText; parent: string | null; isActive: boolean; sortOrder: number; image?: { cloudinaryId: string; version: string; alt?: { en: string; ar: string } } | null }>
 > {
   await connectDB();
   const cats = await Category.find().sort({ sortOrder: 1 }).lean();
-  return cats.map((c: CategoryDoc & { _id: unknown }) => ({
-    id: String(c._id),
-    slug: c.slug,
-    name: c.name as LocalizedText,
-    parent: c.parent ? String(c.parent) : null,
-    isActive: c.isActive,
-    sortOrder: c.sortOrder,
-  }));
+  return cats.map((c: CategoryDoc & { _id: unknown }) => {
+    const img = c.image;
+    return {
+      id: String(c._id),
+      slug: c.slug,
+      name: c.name as LocalizedText,
+      parent: c.parent ? String(c.parent) : null,
+      isActive: c.isActive,
+      sortOrder: c.sortOrder,
+      image:
+        img?.cloudinaryId && img?.version
+          ? {
+              cloudinaryId: img.cloudinaryId,
+              version: img.version,
+              alt: img.alt
+                ? { en: img.alt.en ?? "", ar: img.alt.ar ?? "" }
+                : undefined,
+            }
+          : null,
+    };
+  });
 }
 
 export async function createCategory(input: CategoryInput): Promise<CategoryDoc> {

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Input, Card, CardBody, Badge, MediaUploader } from "@/components/ui";
+import { mediaUrl } from "@/lib/media/cloudinary-url";
 import type { MediaRef } from "@/lib/shared/types";
 
 export type ManagedOffer = {
@@ -131,7 +132,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
                   <div className="h-10 w-20 overflow-hidden rounded bg-muted">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`https://res.cloudinary.com/dptx6h4qy/image/upload/f_auto,q_auto,w_160/v${o.image.version}/${o.image.cloudinaryId}`}
+                      src={mediaUrl(o.image, 160)}
                       alt={o.titleEn}
                       className="h-full w-full object-cover"
                       onError={(e) => {

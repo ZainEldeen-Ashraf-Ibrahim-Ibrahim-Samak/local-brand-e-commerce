@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "@/i18n/navigation";
 import { Button, Input, Card, CardBody } from "@/components/ui";
 
@@ -18,12 +18,15 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     const res = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
     if (res?.error) {
+      setLoading(false);
       setError("Invalid email or password");
       return;
     }
-    router.push("/admin");
+    // Route by role: buyers go to their seller dashboard, admins to /admin.
+    const session = await getSession();
+    setLoading(false);
+    router.push(session?.user?.role === "buyer" ? "/seller" : "/admin");
     router.refresh();
   }
 

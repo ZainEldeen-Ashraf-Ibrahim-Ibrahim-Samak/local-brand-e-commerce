@@ -17,6 +17,9 @@
   "nav": {
     "home": "الرئيسية",
     "products": "المنتجات",
+    "categories": "التصنيفات",
+    "allProducts": "كل المنتجات",
+    "viewAll": "عرض الكل",
     "trackOrder": "تتبع الطلب",
     "about": "من نحن",
     "contact": "اتصل بنا",

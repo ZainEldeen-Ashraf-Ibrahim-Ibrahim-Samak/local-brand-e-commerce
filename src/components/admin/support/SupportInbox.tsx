@@ -271,7 +271,7 @@ export function SupportInbox() {
                 {selectedInquiry.statusHistory && selectedInquiry.statusHistory.length > 0 && (
                   <div className="space-y-2 border-t border-border pt-3">
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-fg">History Log</span>
-                    <div className="max-h-40 overflow-y-auto space-y-2 text-xs pr-1">
+                    <div className="max-h-40 overflow-y-auto space-y-2 text-xs pe-1">
                       {selectedInquiry.statusHistory.map((h, i) => (
                         <div key={i} className="bg-muted/20 p-2 rounded-token border border-border/30">
                           <div className="flex justify-between font-medium">

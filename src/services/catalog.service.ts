@@ -111,6 +111,7 @@ async function computeFacets(filter: FilterQuery<ProductDoc>): Promise<CatalogRe
 
 export type ProductDetailDTO = ProductCardDTO & {
   description: { en: string; ar: string };
+  category: { name: { en: string; ar: string }; slug: string } | null;
   images: { cloudinaryId: string; version: string }[];
   attributes: { key: string; label: { en: string; ar: string }; values: string[] }[];
   variations: {
@@ -120,6 +121,8 @@ export type ProductDetailDTO = ProductCardDTO & {
     price: number;
     inStock: boolean;
     stock: number;
+    /** Optional per-variation featured image (FR-202b). Null when not set. */
+    image?: { cloudinaryId: string; version: string } | null;
   }[];
 };
 
@@ -128,38 +131,66 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailDTO |
     await connectDB();
     const p = await Product.findOne({ slug, status: "published" }).lean();
     if (!p) return null;
-    const variations = await Variation.find({ product: p._id, isActive: true }).lean();
+    const [variations, category] = await Promise.all([
+      Variation.find({ product: p._id, isActive: true }).lean(),
+      p.category ? Category.findById(p.category).lean() : Promise.resolve(null),
+    ]);
     const card = toCard(p as ProductDoc & { _id: unknown });
     return {
       ...card,
       description: p.description as { en: string; ar: string },
+      category: category
+        ? { name: category.name as { en: string; ar: string }, slug: category.slug }
+        : null,
       images: (p.images ?? []).map((i) => ({ cloudinaryId: i.cloudinaryId, version: i.version })),
       attributes: (p.attributes ?? []).map((a) => ({
         key: a.key,
         label: a.label as { en: string; ar: string },
         values: a.values ?? [],
       })),
-      variations: variations.map((v) => ({
-        id: String(v._id),
-        sku: v.sku,
-        options: (v.options ?? {}) as Record<string, string>,
-        price: v.priceOverride ?? p.basePrice,
-        inStock: v.stock > 0,
-        stock: v.stock,
-      })),
+      variations: variations.map((v) => {
+        const img = v.image as ({ cloudinaryId?: string | null; version?: string | null } | null | undefined);
+        return {
+          id: String(v._id),
+          sku: v.sku,
+          options: (v.options ?? {}) as Record<string, string>,
+          price: v.priceOverride ?? p.basePrice,
+          inStock: v.stock > 0,
+          stock: v.stock,
+          image:
+            img?.cloudinaryId && img?.version
+              ? { cloudinaryId: img.cloudinaryId, version: img.version }
+              : null,
+        };
+      }),
     };
   });
 }
 
-export async function listCategoryTree(): Promise<Array<{ id: string; slug: string; name: { en: string; ar: string }; parent: string | null }>> {
+export type StoreCategory = {
+  id: string;
+  slug: string;
+  name: { en: string; ar: string };
+  parent: string | null;
+  image?: { cloudinaryId: string; version: string } | null;
+};
+
+export async function listCategoryTree(): Promise<StoreCategory[]> {
   return cacheAside(CacheKeys.categories, 300, async () => {
     await connectDB();
     const cats = await Category.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
-    return cats.map((c: CategoryDoc & { _id: unknown }) => ({
-      id: String(c._id),
-      slug: c.slug,
-      name: c.name as { en: string; ar: string },
-      parent: c.parent ? String(c.parent) : null,
-    }));
+    return cats.map((c: CategoryDoc & { _id: unknown }) => {
+      const img = c.image;
+      return {
+        id: String(c._id),
+        slug: c.slug,
+        name: c.name as { en: string; ar: string },
+        parent: c.parent ? String(c.parent) : null,
+        image:
+          img?.cloudinaryId && img?.version
+            ? { cloudinaryId: img.cloudinaryId, version: img.version }
+            : null,
+      };
+    });
   });
 }

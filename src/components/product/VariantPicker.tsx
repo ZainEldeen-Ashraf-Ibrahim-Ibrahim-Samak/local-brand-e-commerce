@@ -9,13 +9,28 @@ import { pickLocale } from "@/lib/shared/types";
 import type { ProductDetailDTO } from "@/services/catalog.service";
 import type { AppLocale } from "@/lib/config/env";
 
-/** Variant selection + add-to-cart for a product (FR-004/FR-005/FR-006). */
-export function VariantPicker({ product, locale }: { product: ProductDetailDTO; locale: AppLocale }) {
+export type { ProductDetailDTO };
+
+/**
+ * Variant selection + add-to-cart (FR-004/FR-005/FR-006).
+ *
+ * Controlled by the parent (ProductDetailClient): the selected `variationId`
+ * and `onSelectVariation` are lifted up so selecting a variant and selecting its
+ * gallery image stay in sync (FR-202b).
+ */
+export function VariantPicker({
+  product,
+  locale,
+  variationId,
+  onSelectVariation,
+}: {
+  product: ProductDetailDTO;
+  locale: AppLocale;
+  variationId: string;
+  onSelectVariation: (id: string) => void;
+}) {
   const t = useTranslations("common");
   const { add } = useCart();
-  const [variationId, setVariationId] = useState<string>(
-    product.variations.find((v) => v.inStock)?.id ?? product.variations[0]?.id ?? "",
-  );
   const [added, setAdded] = useState(false);
 
   const selected = useMemo(
@@ -49,7 +64,7 @@ export function VariantPicker({ product, locale }: { product: ProductDetailDTO; 
             key={v.id}
             type="button"
             disabled={!v.inStock}
-            onClick={() => setVariationId(v.id)}
+            onClick={() => onSelectVariation(v.id)}
             className={[
               "rounded-token border px-3 py-1.5 text-sm transition",
               v.id === variationId ? "border-primary bg-primary text-primary-fg" : "border-border text-fg",

@@ -1,6 +1,6 @@
 import { getWebsiteSettings } from "@/services/settings.service";
 import { SettingsForm, type SettingsInitial } from "@/components/admin/settings/SettingsForm";
-import type { LocalizedText } from "@/lib/shared/types";
+import type { LocalizedText, MediaRef } from "@/lib/shared/types";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,9 @@ export default async function AdminSettingsPage() {
   const announcement = (s.header?.announcement ?? { en: "", ar: "" }) as LocalizedText;
   const about = (s.aboutPage?.body ?? { en: "", ar: "" }) as LocalizedText;
   const seoDesc = (s.seo?.description ?? { en: "", ar: "" }) as LocalizedText;
+  const logo: MediaRef | null = s.logo?.cloudinaryId
+    ? { cloudinaryId: s.logo.cloudinaryId, version: s.logo.version as string, alt: s.logo.alt as LocalizedText }
+    : null;
 
   const initial: SettingsInitial = {
     storeNameEn: storeName.en,
@@ -25,6 +28,7 @@ export default async function AdminSettingsPage() {
     contactAddress: s.contactPage?.address ?? "",
     seoDescriptionEn: seoDesc.en,
     seoDescriptionAr: seoDesc.ar,
+    logo,
   };
 
   return (

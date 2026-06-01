@@ -1,31 +1,96 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ProductCard } from "@/components/product/ProductCard";
-import { listProducts } from "@/services/catalog.service";
-import { Button } from "@/components/ui";
+import { listProducts, listCategoryTree } from "@/services/catalog.service";
+import { ImageWithFallback } from "@/components/ui";
+import { pickLocale } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
 
 export const dynamic = "force-dynamic";
 
-/** Storefront home — featured/newest products (FR-001). */
+/** How many categories get their own product row, and how many products per row. */
+const CATEGORY_LIMIT = 6;
+const PER_CATEGORY = 4;
+
+/** Storefront home — category strip, per-category product rows, then all products (FR-001). */
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const loc = locale as AppLocale;
   const t = await getTranslations("nav");
-  const { items } = await listProducts({ pageSize: 8, sort: "newest" });
+
+  const categories = (await listCategoryTree()).slice(0, CATEGORY_LIMIT);
+
+  // Products for each category + the newest products overall, fetched in parallel.
+  const [perCategory, allProducts] = await Promise.all([
+    Promise.all(
+      categories.map(async (category) => ({
+        category,
+        products: (
+          await listProducts({ categorySlug: category.slug, pageSize: PER_CATEGORY, sort: "newest" })
+        ).items,
+      })),
+    ),
+    listProducts({ pageSize: 8, sort: "newest" }).then((r) => r.items),
+  ]);
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-token bg-muted p-8 text-center">
-        <h1 className="text-2xl font-bold text-fg">{t("products")}</h1>
-        <Link href="/products">
-          <Button className="mt-4">{t("products")}</Button>
-        </Link>
-      </section>
+    <div className="space-y-10">
+      {/* Category quick-links */}
+      {categories.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-fg">{t("categories")}</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {categories.map((c) => (
+              <Link
+                key={c.id}
+                href={{ pathname: "/products", query: { category: c.slug } }}
+                className="group flex flex-col items-center gap-2 rounded-token p-3 text-center transition hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <div className="relative aspect-square w-full overflow-hidden rounded-token bg-muted ring-1 ring-border transition group-hover:ring-primary/50">
+                  <ImageWithFallback image={c.image} alt={pickLocale(c.name, loc) || c.slug} fill />
+                </div>
+                <span className="text-sm font-medium text-fg group-hover:text-primary">
+                  {pickLocale(c.name, loc) || c.slug}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section>
+      {/* One product row per category, each linking to its full listing */}
+      {perCategory
+        .filter((group) => group.products.length > 0)
+        .map(({ category, products }) => (
+          <section key={category.id} className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-bold text-fg">{pickLocale(category.name, loc) || category.slug}</h2>
+              <Link
+                href={{ pathname: "/products", query: { category: category.slug } }}
+                className="shrink-0 text-sm font-medium text-primary hover:underline"
+              >
+                {t("viewAll")}
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {products.map((p) => (
+                <ProductCard key={p.id} product={p} locale={loc} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+      {/* All products at the end */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-xl font-bold text-fg">{t("allProducts")}</h2>
+          <Link href="/products" className="shrink-0 text-sm font-medium text-primary hover:underline">
+            {t("viewAll")}
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {items.map((p) => (
-            <ProductCard key={p.id} product={p} locale={locale as AppLocale} />
+          {allProducts.map((p) => (
+            <ProductCard key={p.id} product={p} locale={loc} />
           ))}
         </div>
       </section>

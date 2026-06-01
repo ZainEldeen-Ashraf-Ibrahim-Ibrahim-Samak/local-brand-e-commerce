@@ -99,7 +99,7 @@ export function CustomerTable() {
                 <span className="text-sm text-muted-fg">No customer records found.</span>
               </div>
             ) : (
-              <table className="w-full text-left text-sm border-collapse">
+              <table className="w-full text-start text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-border text-muted-fg font-medium">
                     <th className="py-2 px-3">Name</th>
@@ -108,7 +108,7 @@ export function CustomerTable() {
                     <th className="py-2 px-3">Orders Count</th>
                     <th className="py-2 px-3">Total Spend</th>
                     <th className="py-2 px-3">Last Order Date</th>
-                    <th className="py-2 px-3 text-right">Profile</th>
+                    <th className="py-2 px-3 text-end">Profile</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -124,7 +124,7 @@ export function CustomerTable() {
                       <td className="py-3 px-3 text-xs text-muted-fg">
                         {new Date(c.lastOrderAt).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-3 text-right">
+                      <td className="py-3 px-3 text-end">
                         <Link
                           href={`/admin/customers/${encodeURIComponent(c.email)}`}
                           className="text-primary hover:underline font-medium text-xs"

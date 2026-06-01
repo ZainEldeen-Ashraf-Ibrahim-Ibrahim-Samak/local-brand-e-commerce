@@ -5,8 +5,16 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Button, Select } from "@/components/ui";
 
-/** Catalog filter controls (size/color/price/sort). Updates the URL query (FR-003). */
-export function FilterPanel({ sizes, colors }: { sizes: string[]; colors: string[] }) {
+/** Catalog filter controls (category/size/color/price/sort). Updates the URL query (FR-003). */
+export function FilterPanel({
+  sizes,
+  colors,
+  categories = [],
+}: {
+  sizes: string[];
+  colors: string[];
+  categories?: { slug: string; label: string }[];
+}) {
   const t = useTranslations("filters");
   const router = useRouter();
   const pathname = usePathname();
@@ -22,6 +30,23 @@ export function FilterPanel({ sizes, colors }: { sizes: string[]; colors: string
 
   return (
     <div className="flex flex-wrap items-end gap-3">
+      {categories.length > 0 && (
+        <label className="text-sm">
+          <span className="mb-1 block text-muted-fg">{t("category")}</span>
+          <Select
+            value={sp.get("category") ?? ""}
+            onChange={(e) => update("category", e.target.value)}
+            className="w-40"
+          >
+            <option value="">—</option>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+        </label>
+      )}
       <label className="text-sm">
         <span className="mb-1 block text-muted-fg">{t("size")}</span>
         <Select value={sp.get("size") ?? ""} onChange={(e) => update("size", e.target.value)} className="w-32">

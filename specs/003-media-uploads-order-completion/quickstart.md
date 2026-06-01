@@ -17,9 +17,14 @@ Ensure Cloudinary env vars from `001` are set (`CLOUDINARY_CLOUD_NAME`, `CLOUDIN
    submit until uploads finish.
 3. Try to publish with **no** image → blocked with a clear message (FR-201a). Add an image → publish
    succeeds; both images appear on the storefront product page in order, first as the thumbnail (SC-201).
-4. Set a category image in the category manager → it shows wherever the category appears.
-5. Upload a `.gif`/`.bmp` or a >5 MB file → rejected with a clear message; nothing saved (SC-207).
-6. Remove an image and save → confirm the Cloudinary asset is deleted (check logs/host).
+4. Set a category image in the category manager → it shows wherever the category appears. (Sign in as a
+   **buyer** → the category manager is not reachable / mutations are rejected — categories are admin-only,
+   FR-203.)
+5. Add a variation and attach a single image to it; save. On the storefront product page, select that
+   variation → its image becomes the featured image; select a variation with no image → the gallery falls
+   back to the product's first image (FR-202a/b, SC-208).
+6. Upload a `.gif`/`.bmp` or a >5 MB file → rejected with a clear message; nothing saved (SC-207).
+7. Remove an image (product or variation) and save → confirm the Cloudinary asset is deleted (check logs/host).
 
 ### US2 — Homepage offer imagery
 1. As admin → `/{locale}/admin/offers`; create two active slides, each with an uploaded image + CTA.

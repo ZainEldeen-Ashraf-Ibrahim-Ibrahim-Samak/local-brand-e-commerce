@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getAdminProduct, listAdminCategories } from "@/services/admin/catalog.admin.service";
 import { ProductForm } from "@/components/admin/catalog/ProductForm";
 import { VariationsEditor, type EditorVariation } from "@/components/admin/catalog/VariationsEditor";
-import { pickLocale, type LocalizedText } from "@/lib/shared/types";
+import { pickLocale, type LocalizedText, type MediaRef } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
 
 export const dynamic = "force-dynamic";
@@ -23,8 +23,20 @@ export default async function EditProductPage({
   const description = (product.description ?? { en: "", ar: "" }) as LocalizedText;
 
   const formCategories = categories.map((c) => ({ id: c.id, name: pickLocale(c.name, loc) || c.slug }));
+  // Map images from lean() result — cloudinaryId/version are always strings when present
+  const productImages: MediaRef[] = (product.images ?? []).flatMap((img) => {
+    const i = img as { cloudinaryId?: string | null; version?: string | null; alt?: { en?: string | null; ar?: string | null } | null };
+    if (!i.cloudinaryId || !i.version) return [];
+    return [{
+      cloudinaryId: i.cloudinaryId,
+      version: i.version,
+      ...(i.alt ? { alt: { en: i.alt.en ?? "", ar: i.alt.ar ?? "" } } : {}),
+    }];
+  });
+
   const editorVariations: EditorVariation[] = variations.map((v) => {
     const options = (v.options ?? {}) as Record<string, string>;
+    const vi = v.image as { cloudinaryId?: string | null; version?: string | null } | null | undefined;
     return {
       id: String(v._id),
       sku: v.sku,
@@ -33,6 +45,9 @@ export default async function EditProductPage({
       priceMajor: v.priceOverride != null ? String(v.priceOverride / 100) : "",
       stock: v.stock,
       isActive: v.isActive,
+      image: vi?.cloudinaryId && vi?.version
+        ? { cloudinaryId: vi.cloudinaryId, version: vi.version }
+        : null,
     };
   });
 
@@ -50,6 +65,7 @@ export default async function EditProductPage({
           category: String(product.category),
           basePriceMajor: product.basePrice / 100,
           status: product.status as "draft" | "published" | "unpublished",
+          images: productImages,
         }}
       />
       <VariationsEditor productId={String(product._id)} variations={editorVariations} />

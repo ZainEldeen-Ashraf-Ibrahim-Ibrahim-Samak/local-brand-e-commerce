@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { Button, Input, Card, CardBody } from "@/components/ui";
+import { Button, Input, Card, CardBody, MediaUploader } from "@/components/ui";
+import type { MediaRef } from "@/lib/shared/types";
 
 export type SettingsInitial = {
   storeNameEn: string;
@@ -17,12 +18,15 @@ export type SettingsInitial = {
   contactAddress: string;
   seoDescriptionEn: string;
   seoDescriptionAr: string;
+  logo: MediaRef | null;
 };
 
 /** Edit core website identity + content (FR-026). */
 export function SettingsForm({ initial }: { initial: SettingsInitial }) {
   const router = useRouter();
   const [v, setV] = useState(initial);
+  const [logo, setLogo] = useState<MediaRef | null>(initial.logo);
+  const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -38,6 +42,7 @@ export function SettingsForm({ initial }: { initial: SettingsInitial }) {
       storeName: { en: v.storeNameEn, ar: v.storeNameAr },
       header: { announcement: { en: v.announcementEn, ar: v.announcementAr }, navLinks: [] },
       aboutPage: { body: { en: v.aboutEn, ar: v.aboutAr } },
+      ...(logo ? { logo } : {}),
       contactPage: {
         body: { en: "", ar: "" },
         email: v.contactEmail,
@@ -65,6 +70,14 @@ export function SettingsForm({ initial }: { initial: SettingsInitial }) {
     <Card>
       <CardBody>
         <form onSubmit={onSubmit} className="space-y-4">
+          <Field label="Store logo">
+            <MediaUploader
+              value={logo}
+              onChange={(val) => setLogo((val as MediaRef | null) ?? null)}
+              folder="branding"
+              onUploadingStateChange={setUploading}
+            />
+          </Field>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field label="Store name (EN)">
               <Input value={v.storeNameEn} onChange={set("storeNameEn")} />
@@ -105,8 +118,8 @@ export function SettingsForm({ initial }: { initial: SettingsInitial }) {
           </div>
           {error && <p className="text-sm text-danger">{error}</p>}
           {saved && <p className="text-sm text-success">Saved.</p>}
-          <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Save settings"}
+          <Button type="submit" disabled={busy || uploading}>
+            {busy ? "Saving…" : uploading ? "Uploading…" : "Save settings"}
           </Button>
         </form>
       </CardBody>

@@ -42,6 +42,15 @@ behavior that already works in `001`.
   until the product has ≥1 image; drafts may have none.
 - Q: What limits should image uploads enforce? → A: Up to 8 images per product, 5 MB per file, formats
   JPEG/PNG/WebP.
+- Q: Should product variations have their own images, separate from the product gallery? → A: Optional —
+  each variation MAY have an image; when selected its image is shown, otherwise it falls back to the
+  product gallery.
+- Q: How many images per variation, and how do they relate to the 8-per-product cap? → A: At most one
+  image per variation, stored separately from (not counting against) the product's 8-image cap.
+- Q: On the storefront, what happens when a shopper selects a variation that has an image? → A: The
+  variation's image becomes the featured image; the rest of the product gallery stays browsable.
+- Q: Who is authorized to edit categories (create, rename, set image, delete)? → A: Admins only — buyers
+  may manage their own products but cannot create, edit, or delete categories.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -66,6 +75,10 @@ it shows in catalog navigation.
    new order/selection is saved and reflected on the storefront, with the first image used as the primary.
 3. **Given** the category form, **When** the admin sets a category image, **Then** it is stored and shown
    wherever the category is presented.
+6. **Given** a product with variations, **When** the admin sets an image on a variation and saves, **Then**
+   that single image is stored on the variation; **and When** a shopper selects that variation on the
+   storefront, **Then** the variation's image becomes the featured image, while a variation with no image
+   falls back to the product gallery.
 4. **Given** an upload of an unsupported file type or an oversized file, **When** the admin attempts it,
    **Then** the upload is rejected with a clear message and nothing is saved.
 5. **Given** an in-progress upload, **When** it is still uploading, **Then** the admin sees progress and
@@ -152,9 +165,19 @@ the order is filterable as incomplete in the admin list.
 - **FR-201**: Admins (and buyers for their own products) MUST be able to upload images for products from
   the product create/edit UI, with up to 8 images per product, preview, reordering, and removal.
 - **FR-202**: The first image of a product MUST act as its primary/thumbnail image across the storefront.
+- **FR-202a**: Admins (and buyers for their own products) MUST be able to set, replace, and remove an
+  optional single image per product variation from the product create/edit UI. A variation image is
+  stored separately from and does NOT count against the product's 8-image cap; the same format/size
+  validation (FR-206), secure upload path (FR-205), orphan/removal deletion (FR-208), and localized
+  alternative text (FR-207) apply. Variation images are optional — a variation MAY have none.
+- **FR-202b**: On the storefront product page, when a shopper selects a variation that has an image,
+  that image MUST become the featured image (the remaining product gallery stays browsable); a selected
+  variation with no image MUST fall back to the product gallery (primary = the product's first image).
 - **FR-201a**: A product MUST have at least one image before it can be published; publishing MUST be
   blocked with a clear message until an image exists. Draft and unpublished products MAY have no image.
 - **FR-203**: Admins MUST be able to set (and replace/remove) a category image from the category UI.
+  Category management (create, rename, set image, delete) is **admin-only**; buyers MAY manage their own
+  products but MUST NOT be able to create, edit, or delete categories.
 - **FR-204**: Admins MUST be able to attach an image to each homepage offer/slider slide.
 - **FR-205**: Image uploads MUST go through the secure, server-authorized upload path; raw host
   credentials MUST NOT be exposed to the browser.
@@ -195,7 +218,10 @@ the order is filterable as incomplete in the admin list.
   list), a Category (single), an Offer/Slider slide (single), or store identity (logo) — with the hosted
   asset identifier and localized alternative text. The first product image is primary.
 - **Product** (existing): Gains operator-managed ordered images via the admin UI.
-- **Category** (existing): Gains an operator-settable image.
+- **Variation** (existing): Gains an optional single image (hosted asset identifier + localized alt text),
+  stored separately from the product's image gallery; used as the featured image when that variation is
+  selected, with fallback to the product gallery when absent.
+- **Category** (existing): Gains an operator-settable image; managed by admins only (not buyers).
 - **Offer / Homepage Slider Slide** (existing): Gains a required-for-display image alongside its title and
   CTA link.
 - **Order** (existing): Pending orders gain a resolution path — an expiry that transitions them to
@@ -207,8 +233,11 @@ the order is filterable as incomplete in the admin list.
 
 - **SC-201**: An admin can create a product with at least two images and see them on the storefront within
   1 minute of publishing, with no developer involvement.
-- **SC-202**: 100% of storefront product, category, and homepage-slider surfaces show either a real image
-  or a neutral placeholder — zero broken images.
+- **SC-202**: 100% of storefront product, variation, category, and homepage-slider surfaces show either a
+  real image or a neutral placeholder — zero broken images.
+- **SC-208**: For a product whose variations have images, selecting a variation on the storefront shows
+  that variation's image as the featured image 100% of the time; a variation without an image falls back
+  to the product gallery with no broken image.
 - **SC-203**: An admin can publish a homepage offer slide with an image and a guest sees it on the
   homepage within 1 minute.
 - **SC-204**: 100% of pending orders whose payment is not completed within the expiry window are marked
@@ -226,8 +255,8 @@ the order is filterable as incomplete in the admin list.
   secure upload-signing endpoint, the catalog/order/offer data models, the shared UI components and
   design tokens, and the bilingual/RTL and dark/light infrastructure.
 - "Missing models and UI" refers to the surfaces found to lack image management: product images
-  (admin form), category image, and homepage offer/slider image; the store logo and existing media
-  references already function and are only aligned with the shared uploader where convenient.
+  (admin form), per-variation image, category image, and homepage offer/slider image; the store logo and
+  existing media references already function and are only aligned with the shared uploader where convenient.
 - The order expiry window is an admin-sensible default (assume ~30 minutes of no completed payment) and
   is treated as configuration; the exact value is not user-critical and may be tuned without re-spec.
 - Expiry/restoration runs via a recurring scheduled background sweep (per FR-213) and MUST be idempotent

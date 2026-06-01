@@ -13,10 +13,17 @@ description: "Task list for Media Uploads Everywhere, Homepage Offer Imagery & I
 no-oversell on late payment). Other tasks are implementation-focused.
 
 **Context**: This feature extends the shipped `001-ecommerce-platform` in place. Image fields already
-exist on `Product.images[]`, `Category.image`, and `Offer.image`; the order lifecycle already has a
-terminal `failed` status with stock restoration on `failOrder`. Reuses the existing `signUpload`/
-`mediaUrl` Cloudinary helpers, `requireRole("admin")` guards, `components/ui` primitives + design tokens,
-next-intl catalogs, and the `001` status-change notification. No new dependency is introduced.
+exist on `Product.images[]`, `Variation.image`, `Category.image`, and `Offer.image`; the order lifecycle
+already has a terminal `failed` status with stock restoration on `failOrder`. Reuses the existing
+`signUpload`/`mediaUrl` Cloudinary helpers, `requireRole("admin")` guards, `components/ui` primitives +
+design tokens, next-intl catalogs, and the `001` status-change notification. No new dependency is
+introduced.
+
+**Clarification follow-up (2026-06-01)**: Phase 7 below adds two clarified requirements that post-date the
+original T001–T026 work — per-variation images (FR-202a/b, SC-208) and explicit admin-only category
+management (FR-203). The variation routes already accept an `image` and category routes already call
+`requireRole("admin")`, so this work is mostly UI wiring, server-side validate/cleanup, a storefront
+featured-image swap, and authorization-confirming tests.
 
 **Verified field paths**: order customer email/name/WhatsApp under `order.customer.{email,name,whatsapp}`;
 order total is top-level `order.grandTotal`; statuses come from `ORDER_STATUSES` (terminal `failed` is
@@ -125,13 +132,41 @@ double-restore.
 
 ---
 
-## Phase 6: Polish & Cross-Cutting Concerns
+## Phase 6: User Story 1 (extension) - Variation media & admin-only categories (Priority: P1)
+
+**Goal**: Each product variation MAY carry one optional image (separate from the product's 8-image cap)
+that becomes the storefront featured image when that variation is selected, falling back to the product
+gallery; category management remains strictly admin-only.
+
+**Independent Test**: As admin, add a variation with an image and save; on the storefront product page,
+selecting that variation shows its image as the featured image, while selecting an image-less variation
+falls back to the product's first image. As a buyer, category create/edit/delete is rejected.
+
+### Critical-path tests for Phase 7 (write first; must fail before implementation)
+
+- [X] T027 [P] [US1] Unit test: a variation `image` is validated via `validateUploadMeta` (JPEG/PNG/WebP, ≤5 MB) and rejected otherwise (FR-202a) in `tests/unit/media.validate.test.ts`
+- [X] T028 [P] [US1] Integration test: a non-admin (buyer/guest) is rejected (403/401) from `POST/PATCH/DELETE` category endpoints, while an admin succeeds (FR-203) in `tests/integration/category.admin-only.test.ts`
+
+### Implementation for Phase 7
+
+- [X] T029 [US1] In `src/services/admin/catalog.admin.service.ts` (`addVariation`/`updateVariation`): validate the optional variation `image` via `validateUploadMeta`, and on replace/clear delete the prior `cloudinaryId` via `destroyAsset` (failures logged for retry) (FR-202a/FR-208)
+- [X] T030 [US1] Expose each variation's `image` on `ProductDetailDTO` (so the storefront can swap) in `src/services/catalog.service.ts`
+- [X] T031 [P] [US1] Add a single-image `MediaUploader` per variation row in `src/components/admin/catalog/VariationsEditor.tsx` (FR-202a)
+- [X] T032 [US1] Storefront featured-image swap: lift the selected `variationId` so the product detail gallery shows the selected variation's image when present and falls back to `Product.images[0]` otherwise, in `src/components/product/VariantPicker.tsx` and `src/app/[locale]/(storefront)/products/[slug]/page.tsx` (FR-202b/SC-208)
+- [X] T033 [US1] Confirm/keep `requireRole("admin")` on all category mutating handlers and add admin-only affordances in `src/components/admin/catalog/CategoryManager.tsx` (no buyer access) (FR-203)
+
+**Checkpoint**: Variations carry optional imagery that drives the storefront featured image; categories are provably admin-only.
+
+---
+
+## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Final validation across the new surfaces
 
 - [X] T024 [P] E2E test: upload a product image → it shows on the storefront; create an offer slide → it shows on the homepage (Playwright) in `tests/e2e/media-and-offers.spec.ts`
 - [X] T025 [P] Verify the uploader, admin forms, and homepage slider in AR/RTL + EN/LTR, dark/light, and responsive layouts (Principle II); confirm zero broken images across product/category/home surfaces (SC-202)
 - [X] T026 Run `npm run typecheck` and `npm run lint`, then execute `quickstart.md` validation end to end (including the `ORDER_EXPIRY_MINUTES=1` sweep walkthrough)
+- [X] T034 [P] Extend the e2e/manual pass: selecting a variation with an image swaps the storefront featured image and an image-less variation falls back to the product gallery (SC-208); verify variation uploader in AR/RTL + EN/LTR and dark/light
 
 ---
 
@@ -147,7 +182,10 @@ double-restore.
     `HomeSlider` (T016) need T004/T005
   - US3 (P1) is independent of media work — depends only on existing order/inventory code + Foundational
     setup (env vars from T002)
-- **Polish (Phase 6)**: depends on the user stories being complete
+- **Variation media & category authorization (Phase 6)**: extends US1; depends on Foundational
+  (`MediaUploader` T004, `validateUploadMeta`/`destroyAsset` T003) and on US1's `catalog.admin.service`
+  gate (T008). Independent of US2/US3.
+- **Polish (Phase 7)**: depends on the user stories being complete
 
 ### Within each story
 
@@ -162,7 +200,8 @@ double-restore.
 - US1: T006 ∥ T007 (tests); after T008 → T009 ∥ T010; T012 ∥ T013 (different files); T011 after T004
 - US2: T014 ∥ (T015 after T004); T016 after T005
 - US3: T017 ∥ T018 (tests); T022 ∥ (T019→T020→T021 chain)
-- Polish: T024 ∥ T025
+- Phase 6: T027 ∥ T028 (tests); T029 ∥ T030 ∥ T031 (different files); T032 after T030; T033 ∥ rest
+- Polish: T024 ∥ T025 ∥ T034
 
 ---
 
@@ -196,9 +235,12 @@ T009 product routes · T010 category routes · T012 CategoryManager · T013 Prod
 ### Incremental delivery
 
 - Add US3 (incomplete-order handling) → abandoned stock is freed, admin list de-noised
-- Phase 6 polish (e2e, i18n/theme/responsive + zero-broken-image audit, quickstart) before shipping
+- Add Phase 6 (variation media + admin-only categories) → variation imagery drives the storefront
+  featured image; category authorization is test-locked
+- Phase 7 polish (e2e, i18n/theme/responsive + zero-broken-image audit, quickstart) before shipping
 
-US3 is independent of US1/US2 and may be delivered in parallel by a second developer.
+US3 is independent of US1/US2 and may be delivered in parallel by a second developer. Phase 6 extends US1
+and should follow US1's service gate (T008).
 
 ---
 
