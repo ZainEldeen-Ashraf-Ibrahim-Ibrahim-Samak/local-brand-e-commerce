@@ -1,9 +1,0 @@
-src/app/[locale]/(admin)/admin/orders/[id]/page.tsx(26,16): error TS2322: Type 'Tone' is not assignable to type 'Tone | undefined'.
-  Type '"info"' is not assignable to type 'Tone | undefined'.
-src/app/[locale]/(admin)/admin/orders/page.tsx(45,30): error TS2322: Type 'Tone' is not assignable to type 'Tone | undefined'.
-  Type '"info"' is not assignable to type 'Tone | undefined'.
-src/app/[locale]/(admin)/admin/page.tsx(58,28): error TS2322: Type 'Tone' is not assignable to type 'Tone | undefined'.
-  Type '"info"' is not assignable to type 'Tone | undefined'.
-src/app/[locale]/(admin)/admin/products/page.tsx(53,30): error TS2322: Type '"neutral" | "success"' is not assignable to type 'Tone | undefined'.
-  Type '"neutral"' is not assignable to type 'Tone | undefined'.
-src/components/admin/catalog/VariationsEditor.tsx(92,42): error TS2322: Type '"warning"' is not assignable to type 'Tone | undefined'.

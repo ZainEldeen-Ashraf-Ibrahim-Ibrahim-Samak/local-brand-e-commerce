@@ -42,6 +42,20 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
     router.refresh();
   }
 
+  async function toggleActive(id: string, isActive: boolean) {
+    const res = await fetch(`/api/admin/categories/${id}/toggle`, { method: "POST" });
+    if (!res.ok) {
+      setError("Could not update");
+      return;
+    }
+    router.refresh();
+  }
+  
+  async function edit(id: string) {
+    router.push(`/admin/categories/${id}`);
+  }
+
+
   return (
     <Card>
       <CardBody className="space-y-4">
@@ -58,9 +72,17 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
                   </span>
                   {!c.isActive && <Badge tone="danger">inactive</Badge>}
                 </div>
+                <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => toggleActive(c.id, c.isActive)}>
+                    {c.isActive ? "Deactivate" : "Activate"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => edit(c.id)}>
+                  Edit
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => remove(c.id)}>
                   Delete
                 </Button>
+                </div>
               </li>
             ))}
           </ul>

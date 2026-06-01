@@ -27,6 +27,6 @@ const websiteSettingsSchema = new Schema(
 
 export type WebsiteSettingsDoc = InferSchemaType<typeof websiteSettingsSchema>;
 
-export const WebsiteSettings: mongoose.model<WebsiteSettingsDoc> =
-  (mongoose.models.WebsiteSettings as mongoose.model<WebsiteSettingsDoc>) ??
+export const WebsiteSettings: mongoose.Model<WebsiteSettingsDoc> =
+  (mongoose.models.WebsiteSettings as mongoose.Model<WebsiteSettingsDoc>) ??
   mongoose.model<WebsiteSettingsDoc>("WebsiteSettings", websiteSettingsSchema);

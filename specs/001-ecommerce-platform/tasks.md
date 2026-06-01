@@ -188,15 +188,15 @@ storefront reflects all changes within 1 minute.
 
 ### Implementation for US4
 
-- [ ] T066 [P] [US4] Create Offer/HomepageSliderSlide model in `src/models/Offer.ts`
-- [ ] T067 [US4] Implement admin settings/theme service (PUT singletons + immediate cache invalidation) in `src/services/admin/settings.admin.service.ts`
-- [ ] T068 [P] [US4] Implement `GET/PUT /api/admin/settings` and `GET/PUT /api/admin/theme` in `src/app/api/admin/settings/route.ts` and `src/app/api/admin/theme/route.ts`
-- [ ] T069 [P] [US4] Implement offers CRUD + reorder endpoints under `src/app/api/admin/offers/`
-- [ ] T070 [US4] Implement `GET /api/storefront/home` (slider + featured) in `src/app/api/storefront/home/route.ts`
-- [ ] T071 [P] [US4] Build admin settings UI (name, logo, header/footer, contact, about, social, SEO) in `src/app/[locale]/(admin)/admin/settings/`
-- [ ] T072 [P] [US4] Build admin theme editor UI (color/font/layout/mode/language pickers with live preview) in `src/app/[locale]/(admin)/admin/theme/`
-- [ ] T073 [P] [US4] Build admin offers/slider manager UI in `src/app/[locale]/(admin)/admin/offers/`
-- [ ] T074 [US4] Build homepage slider component consuming Offers in `src/components/storefront/HomeSlider.tsx`
+- [X] T066 [P] [US4] Create Offer/HomepageSliderSlide model in `src/models/Offer.ts`
+- [X] T067 [US4] Implement admin settings/theme service (PUT singletons + immediate cache invalidation) in `src/services/admin/settings.admin.service.ts`
+- [X] T068 [P] [US4] Implement `GET/PUT /api/admin/settings` and `GET/PUT /api/admin/theme` in `src/app/api/admin/settings/route.ts` and `src/app/api/admin/theme/route.ts`
+- [X] T069 [P] [US4] Implement offers CRUD + reorder endpoints under `src/app/api/admin/offers/`
+- [X] T070 [US4] Implement `GET /api/storefront/home` (slider + featured) in `src/app/api/storefront/home/route.ts`
+- [X] T071 [P] [US4] Build admin settings UI (name, logo, header/footer, contact, about, social, SEO) in `src/app/[locale]/(admin)/admin/settings/`
+- [X] T072 [P] [US4] Build admin theme editor UI (color/font/layout/mode/language pickers with live preview) in `src/app/[locale]/(admin)/admin/theme/`
+- [X] T073 [P] [US4] Build admin offers/slider manager UI in `src/app/[locale]/(admin)/admin/offers/`
+- [X] T074 [US4] Build homepage slider component consuming Offers in `src/components/storefront/HomeSlider.tsx`
 
 **Checkpoint**: Store identity and theme are fully admin-configurable.
 
@@ -212,17 +212,17 @@ reduction applies at checkout.
 
 ### Critical-path test for US5
 
-- [ ] T075 [P] [US5] Unit test: coupon never stacks with active discount; larger reduction wins (FR-038) in `tests/unit/pricing.nostacking.test.ts`
+- [X] T075 [P] [US5] Unit test: coupon never stacks with active discount; larger reduction wins (FR-038) in `tests/unit/pricing.nostacking.test.ts`
 
 ### Implementation for US5
 
-- [ ] T076 [P] [US5] Create Coupon and Discount models in `src/models/Coupon.ts` and `src/models/Discount.ts`
-- [ ] T077 [US5] Extend pricing resolver with discount/coupon resolution + no-stacking rule (R4, FR-038) in `src/lib/pricing/resolve.ts`
-- [ ] T078 [US5] Implement coupon service (validate window/usage/eligibility, atomic usage increment) in `src/services/promotions.service.ts`
-- [ ] T079 [P] [US5] Implement `POST /api/storefront/coupons/apply` in `src/app/api/storefront/coupons/apply/route.ts`
-- [ ] T080 [P] [US5] Implement admin coupons/discounts CRUD endpoints under `src/app/api/admin/coupons/` and `src/app/api/admin/discounts/`
-- [ ] T081 [US5] Integrate coupon entry + discount display into checkout flow in `src/app/[locale]/(storefront)/checkout/`
-- [ ] T082 [P] [US5] Build admin promotions UI (coupons + discounts) in `src/app/[locale]/(admin)/admin/promotions/`
+- [X] T076 [P] [US5] Create Coupon and Discount models in `src/models/Coupon.ts` and `src/models/Discount.ts`
+- [X] T077 [US5] Extend pricing resolver with discount/coupon resolution + no-stacking rule (R4, FR-038) in `src/lib/pricing/resolve.ts`
+- [X] T078 [US5] Implement coupon service (validate window/usage/eligibility, atomic usage increment) in `src/services/promotions.service.ts`
+- [X] T079 [P] [US5] Implement `POST /api/storefront/coupons/apply` in `src/app/api/storefront/coupons/apply/route.ts`
+- [X] T080 [P] [US5] Implement admin coupons/discounts CRUD endpoints under `src/app/api/admin/coupons/` and `src/app/api/admin/discounts/`
+- [X] T081 [US5] Integrate coupon entry + discount display into checkout flow in `src/app/[locale]/(storefront)/checkout/`
+- [X] T082 [P] [US5] Build admin promotions UI (coupons + discounts) in `src/app/[locale]/(admin)/admin/promotions/`
 
 **Checkpoint**: Promotions work end to end with correct no-stacking pricing.
 
@@ -237,10 +237,10 @@ computed tax appear in the order total.
 
 ### Implementation for US6
 
-- [ ] T083 [US6] Implement tax/shipping admin service (PUT TaxShippingPolicy + cache invalidation) in `src/services/admin/taxshipping.admin.service.ts`
-- [ ] T084 [P] [US6] Implement `GET/PUT /api/admin/tax-shipping` in `src/app/api/admin/tax-shipping/route.ts`
-- [ ] T085 [US6] Ensure checkout quote/order consume TaxShippingPolicy (selectable shipping option, tax line) in `src/lib/pricing/resolve.ts` and `src/services/order.service.ts`
-- [ ] T086 [P] [US6] Build admin tax/shipping settings UI in `src/app/[locale]/(admin)/admin/tax-shipping/`
+- [X] T083 [US6] Implement tax/shipping admin service (PUT TaxShippingPolicy + cache invalidation) in `src/services/admin/taxshipping.admin.service.ts`
+- [X] T084 [P] [US6] Implement `GET/PUT /api/admin/tax-shipping` in `src/app/api/admin/tax-shipping/route.ts`
+- [X] T085 [US6] Ensure checkout quote/order consume TaxShippingPolicy (selectable shipping option, tax line) in `src/lib/pricing/resolve.ts` and `src/services/order.service.ts`
+- [X] T086 [P] [US6] Build admin tax/shipping settings UI in `src/app/[locale]/(admin)/admin/tax-shipping/`
 
 **Checkpoint**: Checkout totals reflect admin-configured tax and shipping.
 
@@ -256,10 +256,10 @@ orders for owned products, and get 403 when touching others' products.
 
 ### Implementation for US7
 
-- [ ] T087 [US7] Implement buyer service with ownership scoping (ownerUserId == session user) in `src/services/buyer.service.ts`
-- [ ] T088 [P] [US7] Implement buyer product endpoints (GET/POST/PATCH own products, 403 otherwise) under `src/app/api/buyer/products/`
-- [ ] T089 [P] [US7] Implement buyer orders endpoint (orders containing owned products only) in `src/app/api/buyer/orders/route.ts`
-- [ ] T090 [US7] Build buyer (seller) dashboard + product management UI in `src/app/[locale]/(buyer)/seller/`
+- [X] T087 [US7] Implement buyer service with ownership scoping (ownerUserId == session user) in `src/services/buyer.service.ts`
+- [X] T088 [P] [US7] Implement buyer product endpoints (GET/POST/PATCH own products, 403 otherwise) under `src/app/api/buyer/products/`
+- [X] T089 [P] [US7] Implement buyer orders endpoint (orders containing owned products only) in `src/app/api/buyer/orders/route.ts`
+- [X] T090 [US7] Build buyer (seller) dashboard + product management UI in `src/app/[locale]/(buyer)/seller/`
 
 **Checkpoint**: Buyer role works with strict ownership isolation.
 
@@ -269,13 +269,13 @@ orders for owned products, and get 403 when touching others' products.
 
 **Purpose**: Final hardening across all stories
 
-- [ ] T091 [P] E2E test: guest purchase + order tracking happy paths (Playwright) in `tests/e2e/guest-journey.spec.ts`
-- [ ] T092 [P] E2E test: admin smoke (login, publish product, advance order) in `tests/e2e/admin-smoke.spec.ts`
-- [ ] T093 [P] Accessibility + AR-RTL/EN-LTR + dark/light + responsive audit across key pages (SC-008, FR-032)
-- [ ] T094 [P] Add health endpoint + metrics (checkout success, notification delivery, cache hit, stock conflicts) per R2 in `src/app/api/health/route.ts`
-- [ ] T095 [P] Verify all secrets are env-only and add security headers/rate-limit defaults (Principle III) in `next.config.ts` and `src/middleware.ts`
-- [ ] T096 [P] Performance pass: confirm Redis caching + invalidation and Cloudinary responsive images on storefront (SC-002, SC-009)
-- [ ] T097 [P] Author README + run `quickstart.md` validation end to end
+- [X] T091 [P] E2E test: guest purchase + order tracking happy paths (Playwright) in `tests/e2e/guest-journey.spec.ts`
+- [X] T092 [P] E2E test: admin smoke (login, publish product, advance order) in `tests/e2e/admin-smoke.spec.ts`
+- [X] T093 [P] Accessibility + AR-RTL/EN-LTR + dark/light + responsive audit across key pages (SC-008, FR-032) — RTL `dir` at layout root, next-themes dark/light bound to tokens, responsive grids + logical (`ms-`/`text-start`) properties, semantic labels/aria on forms & controls
+- [X] T094 [P] Add health endpoint + metrics (checkout success, notification delivery, cache hit, stock conflicts) per R2 in `src/app/api/health/route.ts`
+- [X] T095 [P] Verify all secrets are env-only and add security headers/rate-limit defaults (Principle III) in `next.config.ts` and `src/middleware.ts`
+- [X] T096 [P] Performance pass: confirm Redis caching + invalidation and Cloudinary responsive images on storefront (SC-002, SC-009) — cache-aside on catalog/product/settings/home/tax-shipping with prefix invalidation on writes; `mediaUrl` uses `f_auto,q_auto,w_*`
+- [X] T097 [P] Author README + run `quickstart.md` validation end to end
 
 ---
 

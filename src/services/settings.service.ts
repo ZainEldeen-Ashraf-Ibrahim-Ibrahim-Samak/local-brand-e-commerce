@@ -31,8 +31,10 @@ export async function getThemeSettings(): Promise<ThemeSettingsDoc> {
 }
 
 export async function getTaxShippingPolicy(): Promise<TaxShippingPolicyDoc> {
-  await connectDB();
-  return getOrCreate<TaxShippingPolicyDoc>(TaxShippingPolicy, {});
+  return cacheAside(CacheKeys.taxShipping, 300, async () => {
+    await connectDB();
+    return getOrCreate<TaxShippingPolicyDoc>(TaxShippingPolicy, {});
+  });
 }
 
 export async function invalidateSettings(): Promise<void> {
@@ -42,4 +44,8 @@ export async function invalidateSettings(): Promise<void> {
 
 export async function invalidateTheme(): Promise<void> {
   await cacheInvalidate(CacheKeys.theme);
+}
+
+export async function invalidateTaxShipping(): Promise<void> {
+  await cacheInvalidate(CacheKeys.taxShipping);
 }

@@ -37,9 +37,17 @@ export async function trackOrder(input: TrackingInput): Promise<OrderTrackingDTO
   return {
     orderNumber: order.orderNumber,
     status: order.status ?? "pending",
-    statusHistory: (order.statusHistory ?? []).map((s) => ({ to: s.to, at: s.at ?? new Date() })),
-    items: (order.items ?? []).map((i) => ({
-      name: i.productNameSnapshot as { en: string; ar: string },
+    statusHistory: ((order.statusHistory ?? []) as Array<{ to: string; at?: Date }>).map((s) => ({
+      to: s.to,
+      at: s.at ?? new Date(),
+    })),
+    items: ((order.items ?? []) as Array<{
+      productNameSnapshot?: { en: string; ar: string };
+      options?: Record<string, string>;
+      quantity: number;
+      lineTotal: number;
+    }>).map((i) => ({
+      name: (i.productNameSnapshot ?? { en: "", ar: "" }) as { en: string; ar: string },
       options: (i.options ?? {}) as Record<string, string>,
       quantity: i.quantity,
       lineTotal: i.lineTotal,

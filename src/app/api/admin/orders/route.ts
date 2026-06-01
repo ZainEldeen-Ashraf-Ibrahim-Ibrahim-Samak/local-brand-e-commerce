@@ -4,6 +4,8 @@ import { requireRole } from "@/lib/auth/guards";
 import { listAdminOrders } from "@/services/admin/orders.admin.service";
 import type { OrderStatus } from "@/lib/shared/types";
 
+export const dynamic = "force-dynamic";
+
 /** GET /api/admin/orders — list/filter orders (FR-020). */
 export async function GET(req: NextRequest) {
   return handleRoute(async () => {

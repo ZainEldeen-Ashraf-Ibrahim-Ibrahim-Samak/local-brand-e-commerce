@@ -15,6 +15,6 @@ const notificationLogSchema = new Schema(
 
 export type NotificationLogDoc = InferSchemaType<typeof notificationLogSchema>;
 
-export const NotificationLog: mongoose.model<NotificationLogDoc> =
-  (mongoose.models.NotificationLog as mongoose.model<NotificationLogDoc>) ??
+export const NotificationLog: mongoose.Model<NotificationLogDoc> =
+  (mongoose.models.NotificationLog as mongoose.Model<NotificationLogDoc>) ??
   mongoose.model<NotificationLogDoc>("NotificationLog", notificationLogSchema);

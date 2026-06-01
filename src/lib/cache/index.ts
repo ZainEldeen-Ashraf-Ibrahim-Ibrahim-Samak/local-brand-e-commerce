@@ -26,6 +26,7 @@ export const CacheKeys = {
   categories: "cache:categories",
   settings: "cache:settings",
   theme: "cache:theme",
+  taxShipping: "cache:tax-shipping",
   home: "cache:home",
   promotions: "cache:promotions",
 } as const;

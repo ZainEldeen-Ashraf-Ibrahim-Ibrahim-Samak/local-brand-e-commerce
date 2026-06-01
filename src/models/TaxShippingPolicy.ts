@@ -26,6 +26,6 @@ const taxShippingPolicySchema = new Schema(
 
 export type TaxShippingPolicyDoc = InferSchemaType<typeof taxShippingPolicySchema>;
 
-export const TaxShippingPolicy: mongoose.model<TaxShippingPolicyDoc> =
-  (mongoose.models.TaxShippingPolicy as mongoose.model<TaxShippingPolicyDoc>) ??
+export const TaxShippingPolicy: mongoose.Model<TaxShippingPolicyDoc> =
+  (mongoose.models.TaxShippingPolicy as mongoose.Model<TaxShippingPolicyDoc>) ??
   mongoose.model<TaxShippingPolicyDoc>("TaxShippingPolicy", taxShippingPolicySchema);

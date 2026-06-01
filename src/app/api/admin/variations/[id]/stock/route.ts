@@ -4,6 +4,8 @@ import { handleRoute, Errors } from "@/lib/http/errors";
 import { requireRole } from "@/lib/auth/guards";
 import { adjustStock } from "@/services/admin/catalog.admin.service";
 
+export const dynamic = "force-dynamic";
+
 const schema = z
   .object({
     delta: z.number().int().optional(),

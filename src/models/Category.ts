@@ -17,5 +17,6 @@ const categorySchema = new Schema(
 
 export type CategoryDoc = InferSchemaType<typeof categorySchema>;
 
-export const Category: mongoose.model<CategoryDoc> =
-  (mongoose.models.Category as mongoose.model<CategoryDoc>) ?? mongoose.model<CategoryDoc>("Category", categorySchema);
+export const Category: mongoose.Model<CategoryDoc> =
+  (mongoose.models.Category as mongoose.Model<CategoryDoc>) ??
+  mongoose.model<CategoryDoc>("Category", categorySchema);

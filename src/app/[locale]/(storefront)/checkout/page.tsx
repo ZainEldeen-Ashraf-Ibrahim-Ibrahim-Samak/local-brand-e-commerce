@@ -1,151 +1,195 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Button, Card, CardBody, Input, Select, Spinner } from "@/components/ui";
+import { useState, useEffect, useCallback } from "react";
 import { useCart } from "@/lib/cart/useCart";
+import { useRouter } from "@/i18n/navigation";
+import { Button, Input, Card, CardBody, Spinner, Badge } from "@/components/ui";
 import { formatMoney } from "@/lib/format";
-import { pickLocale } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
+import { useParams } from "next/navigation";
 
-type ShippingOption = { id: string; label: { en: string; ar: string }; cost: number };
-type Quote = { subtotal: number; taxTotal: number; shippingCost: number; grandTotal: number };
+// Type needed for Quote definition below
+type Quote = {
+  totals: { subtotal: number; discountTotal: number; taxTotal: number; shippingCost: number; grandTotal: number };
+  shippingOption?: { id: string; label: { en: string; ar: string }; cost: number };
+  coupon?:
+    | { applied: true; code: string; reduction: number }
+    | { applied: false; code: string; reason: string }
+    | null;
+};
 
-/** Guest checkout: contact + address + shipping, live quote, then pay (FR-007–FR-011). */
-export default function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = use(params);
-  const lc = locale as AppLocale;
-  const t = useTranslations("checkout");
-  const { items } = useCart();
-
-  const [options, setOptions] = useState<ShippingOption[]>([]);
-  const [shippingOptionId, setShippingOptionId] = useState("");
+/** Checkout: collect customer + shipping, apply coupon, show server-validated totals. */
+export default function CheckoutPage() {
+  const params = useParams();
+  const locale = (params.locale as AppLocale) ?? "en";
+  const { items, clear } = useCart();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({ email: "", whatsapp: "", name: "", line1: "", city: "", country: "" });
+  const [coupon, setCoupon] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", whatsapp: "", line1: "", city: "", country: "" });
 
-  useEffect(() => {
-    fetch("/api/storefront/checkout/options")
-      .then((r) => r.json())
-      .then((d) => {
-        setOptions(d.shippingOptions ?? []);
-        setShippingOptionId(d.shippingOptions?.[0]?.id ?? "");
-      });
-  }, []);
+  const itemsKey = JSON.stringify(items.map((i) => ({ v: i.variationId, q: i.quantity })));
 
-  useEffect(() => {
-    if (items.length === 0 || !shippingOptionId) return;
-    fetch("/api/storefront/checkout/quote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: items.map((i) => ({ variationId: i.variationId, quantity: i.quantity })),
-        shippingOptionId,
-      }),
-    })
-      .then((r) => r.json())
-      .then(setQuote)
-      .catch(() => setError("quote_failed"));
-  }, [items, shippingOptionId]);
-
-  async function pay() {
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/storefront/checkout", {
+  const fetchQuote = useCallback(
+    async (couponCode?: string) => {
+      if (items.length === 0) {
+        setQuote(null);
+        return;
+      }
+      setLoading(true);
+      const endpoint = couponCode ? "/api/storefront/coupons/apply" : "/api/storefront/checkout/quote";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({ variationId: i.variationId, quantity: i.quantity })),
-          shippingOptionId,
-          customer: { email: form.email, whatsapp: form.whatsapp, name: form.name },
-          shippingAddress: { line1: form.line1, city: form.city, country: form.country },
+          ...(couponCode ? { code: couponCode } : {}),
         }),
       });
+      if (res.ok) setQuote(await res.json());
+      setLoading(false);
+    },
+    [items, itemsKey], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  useEffect(() => {
+    fetchQuote(appliedCoupon || undefined);
+  }, [fetchQuote, appliedCoupon]);
+
+  const applyCoupon = async () => {
+    setAppliedCoupon(coupon.trim());
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const res = await fetch("/api/storefront/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: items.map((i) => ({ variationId: i.variationId, quantity: i.quantity })),
+        couponCode: appliedCoupon || undefined,
+        customer: { name: form.name, email: form.email, whatsapp: form.whatsapp },
+        shippingAddress: { line1: form.line1, city: form.city, country: form.country },
+      }),
+    });
+    if (res.ok) {
       const data = await res.json();
-      if (!res.ok) {
-        setError(data?.error?.code ?? "checkout_failed");
-        return;
-      }
-      if (data.payment?.sessionUrl) window.location.href = data.payment.sessionUrl;
-    } finally {
-      setSubmitting(false);
+      clear();
+      if (data.paymentUrl) window.location.href = data.paymentUrl;
+      else router.push(`/checkout/success?order=${data.orderNumber}`);
+    } else {
+      setLoading(false);
     }
-  }
-
-  if (items.length === 0) return <p className="py-16 text-center text-muted-fg">{t("orderNumber")}</p>;
-
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm({ ...form, [k]: e.target.value });
+  };
 
   return (
-    <div className="grid gap-6 md:grid-cols-3">
-      <div className="space-y-4 md:col-span-2">
-        <Card>
-          <CardBody className="space-y-3">
-            <h2 className="font-semibold text-fg">{t("contact")}</h2>
-            <Input placeholder={t("name")} value={form.name} onChange={set("name")} />
-            <Input placeholder={t("email")} type="email" value={form.email} onChange={set("email")} />
-            <Input placeholder={t("whatsapp")} value={form.whatsapp} onChange={set("whatsapp")} />
-          </CardBody>
-        </Card>
-        <Card>
-          <CardBody className="space-y-3">
-            <h2 className="font-semibold text-fg">{t("address")}</h2>
-            <Input placeholder="Address" value={form.line1} onChange={set("line1")} />
-            <Input placeholder="City" value={form.city} onChange={set("city")} />
-            <Input placeholder="Country" value={form.country} onChange={set("country")} />
-            <Select value={shippingOptionId} onChange={(e) => setShippingOptionId(e.target.value)}>
-              {options.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {pickLocale(o.label, lc)} — {formatMoney(o.cost, lc)}
-                </option>
-              ))}
-            </Select>
-          </CardBody>
-        </Card>
-      </div>
+    <div className="grid gap-6 md:grid-cols-2">
+      <Card>
+        <CardBody>
+          <h2 className="mb-4 text-lg font-semibold text-fg">Checkout</h2>
+          <form onSubmit={onSubmit} className="space-y-3">
+            <Input
+              placeholder="Full name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              required
+            />
+            <Input
+              placeholder="WhatsApp"
+              value={form.whatsapp}
+              onChange={(e) => setForm({ ...form, whatsapp: e.target.value })}
+              required
+            />
+            <Input
+              placeholder="Address line"
+              value={form.line1}
+              onChange={(e) => setForm({ ...form, line1: e.target.value })}
+              required
+            />
+            <Input
+              placeholder="City"
+              value={form.city}
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              required
+            />
+            <Input
+              placeholder="Country"
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+              required
+            />
+            <Button type="submit" className="w-full" disabled={loading || items.length === 0}>
+              {loading ? <Spinner /> : "Place order"}
+            </Button>
+          </form>
+        </CardBody>
+      </Card>
 
-      <Card className="h-fit">
-        <CardBody className="space-y-2">
-          {quote ? (
-            <>
-              <Row label={t("orderNumber")} value="" />
-              <SummaryRow label="Subtotal" value={formatMoney(quote.subtotal, lc)} />
-              <SummaryRow label="Tax" value={formatMoney(quote.taxTotal, lc)} />
-              <SummaryRow label="Shipping" value={formatMoney(quote.shippingCost, lc)} />
-              <div className="flex justify-between border-t border-border pt-2 font-semibold text-fg">
-                <span>Total</span>
-                <span>{formatMoney(quote.grandTotal, lc)}</span>
-              </div>
-            </>
-          ) : (
-            <Spinner />
+      <Card>
+        <CardBody>
+          <h2 className="mb-4 text-lg font-semibold text-fg">Summary</h2>
+
+          <div className="mb-4 flex gap-2">
+            <Input
+              placeholder="Coupon code"
+              value={coupon}
+              onChange={(e) => setCoupon(e.target.value)}
+              className="uppercase"
+            />
+            <Button type="button" variant="outline" onClick={applyCoupon} disabled={!coupon.trim()}>
+              Apply
+            </Button>
+          </div>
+          {quote?.coupon?.applied && (
+            <p className="mb-3">
+              <Badge tone="success">Coupon {quote.coupon.code} applied</Badge>
+            </p>
           )}
-          {error && <p className="text-sm text-danger">{error}</p>}
-          <Button
-            size="lg"
-            className="mt-2 w-full"
-            disabled={submitting || !form.email || !form.whatsapp || !form.name || !form.line1}
-            onClick={pay}
-          >
-            {submitting ? <Spinner /> : t("payNow")}
-          </Button>
+          {quote?.coupon && !quote.coupon.applied && (
+            <p className="mb-3">
+              <Badge tone="danger">Coupon not valid</Badge>
+            </p>
+          )}
+
+          {loading && <Spinner />}
+          {quote && (
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-muted-fg">Subtotal</dt>
+                <dd className="text-fg">{formatMoney(quote.totals.subtotal, locale)}</dd>
+              </div>
+              {quote.totals.discountTotal > 0 && (
+                <div className="flex justify-between">
+                  <dt className="text-muted-fg">Discount</dt>
+                  <dd className="text-fg">- {formatMoney(quote.totals.discountTotal, locale)}</dd>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <dt className="text-muted-fg">Tax</dt>
+                <dd className="text-fg">{formatMoney(quote.totals.taxTotal, locale)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-fg">Shipping</dt>
+                <dd className="text-fg">{formatMoney(quote.totals.shippingCost, locale)}</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2 font-semibold">
+                <dt className="text-fg">Total</dt>
+                <dd className="text-fg">{formatMoney(quote.totals.grandTotal, locale)}</dd>
+              </div>
+            </dl>
+          )}
         </CardBody>
       </Card>
     </div>
   );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between text-sm text-muted-fg">
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  );
-}
-function Row({ label }: { label: string; value: string }) {
-  return <h2 className="font-semibold text-fg">{label}</h2>;
 }

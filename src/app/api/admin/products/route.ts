@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth/guards";
 import { localizedTextSchema, mediaRefSchema } from "@/lib/shared/types";
 import { createProduct, listAdminProducts, type ProductStatus } from "@/services/admin/catalog.admin.service";
 
+export const dynamic = "force-dynamic";
+
 const createSchema = z.object({
   name: localizedTextSchema,
   slug: z.string().optional(),

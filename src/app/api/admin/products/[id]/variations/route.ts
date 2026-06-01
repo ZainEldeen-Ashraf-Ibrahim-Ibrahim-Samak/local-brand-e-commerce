@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth/guards";
 import { mediaRefSchema } from "@/lib/shared/types";
 import { addVariation } from "@/services/admin/catalog.admin.service";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   sku: z.string().min(1),
   options: z.record(z.string(), z.string()).optional(),

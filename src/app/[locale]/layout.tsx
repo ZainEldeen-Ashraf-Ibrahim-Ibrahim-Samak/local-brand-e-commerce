@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import "@/app/globals.css";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
@@ -7,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { getThemeSettings } from "@/services/settings.service";
 import { resolveTokens, tokensToStyle } from "@/lib/design-tokens";
+import { ReactNode } from "react";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

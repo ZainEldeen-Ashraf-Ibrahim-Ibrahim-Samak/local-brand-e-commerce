@@ -1,0 +1,161 @@
+   ▲ Next.js 15.5.18
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 25.1s
+   Linting and checking validity of types ...
+(node:37336) ESLintIgnoreWarning: The ".eslintignore" file is no longer supported. Switch to using the "ignores" property in "eslint.config.js": https://eslint.org/docs/latest/use/configure/migration-guide#ignoring-files
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+./src/models/Category.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/NotificationLog.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/Order.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/Product.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/TaxShippingPolicy.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/ThemeSettings.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/User.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/Variation.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/models/WebsiteSettings.ts
+1:55  Warning: 'Model' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/52) ...
+   Generating static pages (13/52) 
+   Generating static pages (26/52) 
+   Generating static pages (39/52) 
+ ✓ Generating static pages (52/52)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /_not-found                            995 B         103 kB
+├ ● /[locale]                            2.09 kB         113 kB
+├   ├ /ar
+├   └ /en
+├ ● /[locale]/admin                      2.09 kB         108 kB
+├   ├ /ar/admin
+├   └ /en/admin
+├ ● /[locale]/admin/categories           6.53 kB         113 kB
+├   ├ /ar/admin/categories
+├   └ /en/admin/categories
+├ ● /[locale]/admin/offers               6.75 kB         113 kB
+├   ├ /ar/admin/offers
+├   └ /en/admin/offers
+├ ● /[locale]/admin/orders               2.09 kB         108 kB
+├   ├ /ar/admin/orders
+├   └ /en/admin/orders
+├ ƒ /[locale]/admin/orders/[id]          6.26 kB         112 kB
+├ ● /[locale]/admin/products             2.09 kB         108 kB
+├   ├ /ar/admin/products
+├   └ /en/admin/products
+├ ƒ /[locale]/admin/products/[id]        1.38 kB         114 kB
+├ ● /[locale]/admin/products/new           166 B         113 kB
+├   ├ /ar/admin/products/new
+├   └ /en/admin/products/new
+├ ● /[locale]/admin/promotions           6.97 kB         113 kB
+├   ├ /ar/admin/promotions
+├   └ /en/admin/promotions
+├ ● /[locale]/admin/settings             6.68 kB         113 kB
+├   ├ /ar/admin/settings
+├   └ /en/admin/settings
+├ ● /[locale]/admin/tax-shipping         6.89 kB         113 kB
+├   ├ /ar/admin/tax-shipping
+├   └ /en/admin/tax-shipping
+├ ● /[locale]/admin/theme                6.78 kB         113 kB
+├   ├ /ar/admin/theme
+├   └ /en/admin/theme
+├ ● /[locale]/cart                       6.65 kB         141 kB
+├   ├ /ar/cart
+├   └ /en/cart
+├ ● /[locale]/checkout                   7.44 kB         113 kB
+├   ├ /ar/checkout
+├   └ /en/checkout
+├ ● /[locale]/checkout/success           6.23 kB         128 kB
+├   ├ /ar/checkout/success
+├   └ /en/checkout/success
+├ ● /[locale]/login                      2.34 kB         115 kB
+├   ├ /ar/login
+├   └ /en/login
+├ ● /[locale]/products                    6.9 kB         134 kB
+├   ├ /ar/products
+├   └ /en/products
+├ ƒ /[locale]/products/[slug]            3.04 kB         140 kB
+├ ● /[locale]/seller                     2.09 kB         108 kB
+├   ├ /ar/seller
+├   └ /en/seller
+├ ● /[locale]/seller/orders                667 B         103 kB
+├   ├ /ar/seller/orders
+├   └ /en/seller/orders
+├ ● /[locale]/seller/products            6.72 kB         113 kB
+├   ├ /ar/seller/products
+├   └ /en/seller/products
+├ ● /[locale]/track                      2.57 kB         134 kB
+├   ├ /ar/track
+├   └ /en/track
+├ ƒ /api/admin/categories                  223 B         103 kB
+├ ƒ /api/admin/categories/[id]             223 B         103 kB
+├ ƒ /api/admin/coupons                     223 B         103 kB
+├ ƒ /api/admin/coupons/[id]                223 B         103 kB
+├ ƒ /api/admin/dashboard                   223 B         103 kB
+├ ƒ /api/admin/discounts                   223 B         103 kB
+├ ƒ /api/admin/discounts/[id]              223 B         103 kB
+├ ƒ /api/admin/media/sign                  223 B         103 kB
+├ ƒ /api/admin/offers                      223 B         103 kB
+├ ƒ /api/admin/offers/[id]                 223 B         103 kB
+├ ƒ /api/admin/orders                      223 B         103 kB
+├ ƒ /api/admin/orders/[id]                 223 B         103 kB
+├ ƒ /api/admin/orders/[id]/status          223 B         103 kB
+├ ƒ /api/admin/products                    223 B         103 kB
+├ ƒ /api/admin/products/[id]               223 B         103 kB
+├ ƒ /api/admin/products/[id]/variations    223 B         103 kB
+├ ƒ /api/admin/settings                    223 B         103 kB
+├ ƒ /api/admin/tax-shipping                223 B         103 kB
+├ ƒ /api/admin/theme                       223 B         103 kB
+├ ƒ /api/admin/variations/[id]             223 B         103 kB
+├ ƒ /api/admin/variations/[id]/stock       223 B         103 kB
+├ ƒ /api/auth/[...nextauth]                223 B         103 kB
+├ ƒ /api/buyer/orders                      223 B         103 kB
+├ ƒ /api/buyer/products                    223 B         103 kB
+├ ƒ /api/buyer/products/[id]               223 B         103 kB
+├ ƒ /api/health                            223 B         103 kB
+├ ƒ /api/storefront/cart/validate          223 B         103 kB
+├ ƒ /api/storefront/categories             223 B         103 kB
+├ ƒ /api/storefront/checkout               223 B         103 kB
+├ ƒ /api/storefront/checkout/options       223 B         103 kB
+├ ƒ /api/storefront/checkout/quote         223 B         103 kB
+├ ƒ /api/storefront/coupons/apply          223 B         103 kB
+├ ƒ /api/storefront/home                   223 B         103 kB
+├ ƒ /api/storefront/orders/track           223 B         103 kB
+├ ƒ /api/storefront/payments/webhook       223 B         103 kB
+├ ƒ /api/storefront/products               223 B         103 kB
+├ ƒ /api/storefront/products/[slug]        223 B         103 kB
+└ ƒ /api/storefront/settings               223 B         103 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/1255-b28ea36bf0cdbd65.js      46.2 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)             2 kB
+
+
+ƒ Middleware                             52.3 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

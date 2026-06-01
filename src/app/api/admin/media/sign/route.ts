@@ -4,6 +4,8 @@ import { handleRoute } from "@/lib/http/errors";
 import { requireRole } from "@/lib/auth/guards";
 import { signUpload } from "@/lib/media/cloudinary";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({ folder: z.string().optional() });
 
 /** POST /api/admin/media/sign — signed Cloudinary upload params (secret stays server-side). */

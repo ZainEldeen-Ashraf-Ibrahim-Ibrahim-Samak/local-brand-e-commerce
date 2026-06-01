@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth/guards";
 import { transitionOrder } from "@/services/order.service";
 import { ORDER_STATUSES } from "@/lib/shared/types";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   to: z.enum(ORDER_STATUSES),
   note: z.string().optional(),

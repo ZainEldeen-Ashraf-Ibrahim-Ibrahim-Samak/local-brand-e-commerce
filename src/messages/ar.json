@@ -19,7 +19,9 @@
     "products": "المنتجات",
     "trackOrder": "تتبع الطلب",
     "about": "من نحن",
-    "contact": "اتصل بنا"
+    "contact": "اتصل بنا",
+    "cart": "السلة"
+
   },
   "filters": {
     "size": "المقاس",

@@ -34,5 +34,6 @@ productSchema.index({ "name.en": "text", "name.ar": "text", "description.en": "t
 
 export type ProductDoc = InferSchemaType<typeof productSchema>;
 
-export const Product: mongoose.model<ProductDoc> =
-  (mongoose.models.Product as mongoose.model<ProductDoc>) ?? mongoose.model<ProductDoc>("Product", productSchema);
+export const Product: mongoose.Model<ProductDoc> =
+  (mongoose.models.Product as mongoose.Model<ProductDoc>) ??
+  mongoose.model<ProductDoc>("Product", productSchema);

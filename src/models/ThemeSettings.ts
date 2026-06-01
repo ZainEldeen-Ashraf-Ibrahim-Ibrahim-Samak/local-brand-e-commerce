@@ -21,6 +21,6 @@ const themeSettingsSchema = new Schema(
 
 export type ThemeSettingsDoc = InferSchemaType<typeof themeSettingsSchema>;
 
-export const ThemeSettings: mongoose.model<ThemeSettingsDoc> =
-  (mongoose.models.ThemeSettings as mongoose.model<ThemeSettingsDoc>) ??
+export const ThemeSettings: mongoose.Model<ThemeSettingsDoc> =
+  (mongoose.models.ThemeSettings as mongoose.Model<ThemeSettingsDoc>) ??
   mongoose.model<ThemeSettingsDoc>("ThemeSettings", themeSettingsSchema);

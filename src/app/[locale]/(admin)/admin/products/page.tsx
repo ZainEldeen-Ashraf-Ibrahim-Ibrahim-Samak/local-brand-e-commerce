@@ -50,7 +50,12 @@ export default async function AdminProductsPage({ params }: { params: Promise<{ 
                     <td className="py-2 text-fg">{formatMoney(p.basePrice, loc)}</td>
                     <td className="py-2 text-fg">{p.variationCount}</td>
                     <td className="py-2">
-                      <Badge tone={p.status === "published" ? "success" : "neutral"}>{p.status}</Badge>
+                      <Badge tone={p.status === "published" ? "success" : "muted"}>{p.status}</Badge>
+                    </td>
+                    <td className="py-2 text-right">
+                      <Link href={`/admin/products/${p.id}`} className="text-sm text-primary">
+                        Edit
+                      </Link>
                     </td>
                   </tr>
                 ))}

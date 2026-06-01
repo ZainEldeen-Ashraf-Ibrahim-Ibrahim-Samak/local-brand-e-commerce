@@ -15,11 +15,13 @@ export async function POST(req: NextRequest) {
     const body = schema.parse(await req.json());
     const priced = await priceCart(body.items, body.shippingOptionId);
     return NextResponse.json({
-      subtotal: priced.totals.subtotal,
-      discountTotal: priced.totals.discountTotal,
-      taxTotal: priced.totals.taxTotal,
-      shippingCost: priced.totals.shippingCost,
-      grandTotal: priced.totals.grandTotal,
+      totals: {
+        subtotal: priced.totals.subtotal,
+        discountTotal: priced.totals.discountTotal,
+        taxTotal: priced.totals.taxTotal,
+        shippingCost: priced.totals.shippingCost,
+        grandTotal: priced.totals.grandTotal,
+      },
       shippingOption: priced.shippingOption,
       unavailable: priced.unavailable,
     });

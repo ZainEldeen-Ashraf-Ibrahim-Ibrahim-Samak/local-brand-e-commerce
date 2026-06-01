@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { AdminNav } from "@/components/admin/AdminNav";
@@ -18,6 +19,7 @@ export default async function AdminLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  await headers(); // Force dynamic rendering — this subtree is per-request (auth-gated).
   const session = await auth();
   if (!session?.user) redirect(`/${locale}/login`);
   if (session.user.role !== "admin") redirect(`/${locale}`);

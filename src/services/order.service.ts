@@ -6,6 +6,12 @@ import { Order, type OrderDoc } from "@/models/Order";
 import { getTaxShippingPolicy } from "@/services/settings.service";
 import { reserveStock, restoreStock, type StockItem } from "@/services/inventory.service";
 import { resolveCart, type PriceLineInput } from "@/lib/pricing/resolve";
+import {
+  buildPromotionLines,
+  discountReductionCandidates,
+  validateCoupon,
+  redeemCoupon,
+} from "@/services/promotions.service";
 import { Errors } from "@/lib/http/errors";
 import { canTransition, type OrderStatus } from "@/lib/shared/types";
 import { dispatchOrderNotification } from "@/lib/notifications/dispatcher";
@@ -60,25 +66,52 @@ async function resolveLines(items: CartItemInput[]): Promise<{ lines: ResolvedLi
 
 export type CartPricing = Awaited<ReturnType<typeof priceCart>>;
 
-/** Price a cart against current catalog + tax/shipping policy. Coupon support: US5. */
-export async function priceCart(items: CartItemInput[], shippingOptionId?: string) {
+export type CouponStatus =
+  | { applied: true; code: string; reduction: number }
+  | { applied: false; code: string; reason: string }
+  | null;
+
+/**
+ * Price a cart against current catalog + tax/shipping policy, applying automatic
+ * discounts and an optional coupon. Reductions NEVER stack — the resolver keeps the
+ * single largest candidate (FR-038 / research R4).
+ */
+export async function priceCart(items: CartItemInput[], shippingOptionId?: string, couponCode?: string) {
   const { lines, unavailable } = await resolveLines(items);
   const policy = await getTaxShippingPolicy();
   const shippingOption =
     policy.shippingOptions.find((s) => s.id === shippingOptionId && s.isActive) ?? policy.shippingOptions[0];
 
-  const priceInputs: PriceLineInput[] = lines
-    .filter((l) => l.available)
-    .map((l) => ({ unitPrice: l.unitPrice, quantity: l.quantity }));
+  const availableLines = lines.filter((l) => l.available);
+  const priceInputs: PriceLineInput[] = availableLines.map((l) => ({ unitPrice: l.unitPrice, quantity: l.quantity }));
+  const subtotal = priceInputs.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+
+  // Candidate reductions: every active discount + (optionally) a valid coupon.
+  const promoLines = await buildPromotionLines(
+    availableLines.map((l) => ({ productId: l.productId, lineTotal: l.unitPrice * l.quantity })),
+  );
+  const reductions = await discountReductionCandidates(promoLines);
+
+  let coupon: CouponStatus = null;
+  if (couponCode && couponCode.trim()) {
+    const result = await validateCoupon(couponCode, subtotal);
+    if (result.ok) {
+      reductions.push(result.reduction);
+      coupon = { applied: true, code: couponCode.toUpperCase().trim(), reduction: result.reduction };
+    } else {
+      coupon = { applied: false, code: couponCode.toUpperCase().trim(), reason: result.reason };
+    }
+  }
 
   const totals = resolveCart({
     lines: priceInputs,
+    reductions,
     taxRateBasisPoints: policy.tax?.rateBasisPoints ?? 0,
     taxInclusive: policy.tax?.inclusive ?? false,
     shippingCost: shippingOption?.cost ?? 0,
   });
 
-  return { lines, unavailable, totals, shippingOption };
+  return { lines, unavailable, totals, shippingOption, coupon };
 }
 
 export type CreateOrderInput = {
@@ -99,10 +132,11 @@ export type CreateOrderInput = {
 
 /** Reserve stock atomically and create a `pending` order. Throws OUT_OF_STOCK on conflict. */
 export async function createPendingOrder(input: CreateOrderInput): Promise<OrderDoc & { _id: unknown }> {
-  const priced = await priceCart(input.items, input.shippingOptionId);
+  const priced = await priceCart(input.items, input.shippingOptionId, input.couponCode);
   if (priced.unavailable.length > 0) {
     throw Errors.outOfStock({ unavailable: priced.unavailable });
   }
+  const appliedCouponCode = priced.coupon?.applied ? priced.coupon.code : undefined;
 
   const stockItems: StockItem[] = input.items.map((i) => ({ variationId: i.variationId, quantity: i.quantity }));
   await reserveStock(stockItems); // atomic; throws OUT_OF_STOCK if any line lost the race
@@ -130,7 +164,7 @@ export async function createPendingOrder(input: CreateOrderInput): Promise<Order
       shippingAddress: input.shippingAddress,
       subtotal: priced.totals.subtotal,
       discountTotal: priced.totals.discountTotal,
-      appliedCouponCode: input.couponCode,
+      appliedCouponCode,
       taxTotal: priced.totals.taxTotal,
       shippingOption: {
         id: priced.shippingOption?.id,
@@ -142,6 +176,8 @@ export async function createPendingOrder(input: CreateOrderInput): Promise<Order
       statusHistory: [{ to: "pending", at: new Date() }],
       payment: { status: "pending" },
     });
+    // Count the redemption once the order is persisted (atomic; respects usage limit).
+    if (appliedCouponCode) await redeemCoupon(appliedCouponCode);
     return order as OrderDoc & { _id: unknown };
   } catch (err) {
     // Order persist failed after reserving — release the stock we took.

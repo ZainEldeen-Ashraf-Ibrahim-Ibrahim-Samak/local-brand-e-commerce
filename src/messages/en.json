@@ -19,7 +19,8 @@
     "products": "Products",
     "trackOrder": "Track order",
     "about": "About",
-    "contact": "Contact"
+    "contact": "Contact",
+    "cart": "Cart"
   },
   "filters": {
     "size": "Size",

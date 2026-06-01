@@ -18,5 +18,6 @@ const variationSchema = new Schema(
 
 export type VariationDoc = InferSchemaType<typeof variationSchema>;
 
-export const Variation: mongoose.model<VariationDoc> =
-  (mongoose.models.Variation as mongoose.model<VariationDoc>) ?? mongoose.model<VariationDoc>("Variation", variationSchema);
+export const Variation: mongoose.Model<VariationDoc> =
+  (mongoose.models.Variation as mongoose.Model<VariationDoc>) ??
+  mongoose.model<VariationDoc>("Variation", variationSchema);

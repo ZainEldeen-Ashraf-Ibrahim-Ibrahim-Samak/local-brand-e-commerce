@@ -65,4 +65,5 @@ const orderSchema = new Schema(
 
 export type OrderDoc = InferSchemaType<typeof orderSchema>;
 
-export const Order: mongoose.model<OrderDoc> = (mongoose.models.Order as mongoose.model<OrderDoc>) ?? mongoose.model<OrderDoc>("Order", orderSchema);
+export const Order: mongoose.Model<OrderDoc> =
+  (mongoose.models.Order as mongoose.Model<OrderDoc>) ?? mongoose.model<OrderDoc>("Order", orderSchema);
