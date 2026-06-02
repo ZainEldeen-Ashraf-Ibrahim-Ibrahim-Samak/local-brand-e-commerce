@@ -16,9 +16,9 @@ yarn-debug.log*
 yarn-error.log*
 
 # Env & secrets (never commit)
-.env
-.env.*
-!.env.example
+# .env
+# .env.*
+# !.env.example
 
 # Testing
 coverage/
