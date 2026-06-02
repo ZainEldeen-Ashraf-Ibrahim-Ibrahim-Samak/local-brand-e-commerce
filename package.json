@@ -14,12 +14,17 @@
     "test:watch": "vitest",
     "test:int": "vitest run --dir tests/integration",
     "test:e2e": "playwright test",
-    "db:seed": "node --env-file=.env.local --import tsx scripts/seed.ts"
+    "db:seed": "node --env-file=.env.local --import tsx scripts/seed.ts",
+    "redis:setup": "node ../scripts/setup-redis.js",
+    "redis:ping": "node ../scripts/redis-cli.js ping",
+    "redis:start": "node ../scripts/redis-cli.js start",
+    "redis:stop": "node ../scripts/redis-cli.js stop",
+    "redis:check": "node ../scripts/redis-cli.js check"
   },
   "dependencies": {
-    "@upstash/redis": "^1.38.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
+    "ioredis": "^5.11.0",
     "mongoose": "^8.9.0",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",

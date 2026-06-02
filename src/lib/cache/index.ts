@@ -1,4 +1,4 @@
-import { Redis } from "@upstash/redis";
+import { Redis } from "ioredis";
 import { getEnv } from "@/lib/config/env";
 
 /**
@@ -11,10 +11,7 @@ const globalForRedis = globalThis as unknown as { _redis?: Redis };
 export function getRedis(): Redis {
   if (!globalForRedis._redis) {
     const env = getEnv();
-    globalForRedis._redis = new Redis({
-      url: env.UPSTASH_REDIS_REST_URL,
-      token: env.UPSTASH_REDIS_REST_TOKEN,
-    });
+    globalForRedis._redis = new Redis(env.REDIS_URL);
   }
   return globalForRedis._redis;
 }
@@ -32,12 +29,16 @@ export const CacheKeys = {
 } as const;
 
 export async function cacheGet<T>(key: string): Promise<T | null> {
-  const data = await getRedis().get<T>(key);
-  return data ?? null;
+  try {
+    const data = await getRedis().get(key);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function cacheSet<T>(key: string, value: T, ttlSeconds = 300): Promise<void> {
-  await getRedis().set(key, value, { ex: ttlSeconds });
+  await getRedis().set(key, JSON.stringify(value), "EX", ttlSeconds);
 }
 
 /** Cache-aside: return cached value or compute, store, and return it. */
