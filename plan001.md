@@ -5,6 +5,6 @@
 favorites
 compare list and button
 number idncator for cart and compare list and favorites
-
+make hereoo is bg can upaded from admin with cloud nairy like logog and ohters make the bg take all site can controlle the copomnents in side ii
 
 
