@@ -8,6 +8,15 @@
 
 **Input**: User description: "sub category; site currency must be changed from settings (role admin); admin can control header, footer, home page, about us, contact us, privacy policy, terms and conditions, nav bars, hero sections, offer sliders, hero slider, offer slider; adding filters; favorites; compare list and button; number indicator for cart and compare list and favorites; make hero bg can be updated from admin with Cloudinary (like logo and others), make the bg take the whole site, can control the components inside it"
 
+## Clarifications
+
+### Session 2026-06-04
+
+- Q: When an admin changes the site currency, should it only change the displayed symbol/format, or convert prices? → A: Automatic conversion using a stored, admin-set exchange rate per currency.
+- Q: Should favorites/compare persist for guests, logged-in shoppers, or require login? → A: Browser-local persistence for everyone (guest and logged-in), no cross-device sync.
+- Q: What is the scope of the admin hero background ("take all site")? → A: Full-bleed background spanning the full width of the home page hero section, with components layered over it.
+- Q: What is the maximum capacity of the compare list? → A: 3 products.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Admin manages site content and legal pages (Priority: P1)
@@ -233,9 +242,10 @@ catalog, product, cart, and checkout pages display in the newly selected currenc
   configuration.
 - **FR-004**: Admins MUST be able to edit the About Us, Contact Us, Privacy Policy, and
   Terms & Conditions pages, each in both Arabic and English.
-- **FR-005**: Admins MUST be able to configure the hero section, including uploading a
-  background image via the media host and choosing which inner components (e.g., heading,
-  subtext, call-to-action) are shown and their content.
+- **FR-005**: Admins MUST be able to configure the home page hero section, including
+  uploading a background image via the media host that spans the full width of the hero
+  area (full-bleed), and choosing which inner components (e.g., heading, subtext,
+  call-to-action) are layered over it, including their content and visibility.
 - **FR-006**: Admins MUST be able to manage the offer slider and hero slider — adding,
   editing, reordering, and removing slides.
 - **FR-007**: Admins MUST be able to set/change the site currency from admin settings, and
@@ -259,8 +269,8 @@ catalog, product, cart, and checkout pages display in the newly selected currenc
   favorited product.
 - **FR-015**: Shoppers MUST be able to add and remove products to/from a compare list via a
   compare button and view selected products side by side with comparable attributes.
-- **FR-016**: The compare list MUST enforce a maximum capacity and inform the shopper when
-  the limit is reached.
+- **FR-016**: The compare list MUST enforce a maximum capacity of 3 products and inform the
+  shopper when the limit is reached.
 - **FR-017**: The cart, favorites, and compare controls MUST each display a live numeric
   badge reflecting the current item count, updating as items are added or removed.
 - **FR-018**: Favorites and compare lists MUST gracefully handle products that become
@@ -271,13 +281,14 @@ catalog, product, cart, and checkout pages display in the newly selected currenc
 
 **Persistence & consistency**
 
-- **FR-020**: Favorites and compare selections MUST persist for the shopper across the same
-  session [NEEDS CLARIFICATION: should favorites/compare persist for guests via the browser
-  only, or require a logged-in account to persist across devices?].
-- **FR-021**: When the site currency is changed, price display MUST update site-wide, while
-  previously placed orders MUST retain the currency and amounts agreed at purchase time
-  [NEEDS CLARIFICATION: does changing currency only change the displayed symbol/format, or
-  must existing prices be converted using exchange rates?].
+- **FR-020**: Favorites and compare selections MUST persist locally in the shopper's browser
+  for all shoppers (guest and logged-in alike) across sessions on that browser. Cross-device
+  or cross-browser synchronization is out of scope; lists are not tied to an account.
+- **FR-021**: Admins MUST be able to define an exchange rate per supported currency. When
+  the site currency is changed, displayed prices MUST be converted using the stored exchange
+  rate for the selected currency, and shown with that currency's symbol/code and formatting
+  site-wide. Previously placed orders MUST retain the currency and amounts agreed at purchase
+  time.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -323,7 +334,7 @@ catalog, product, cart, and checkout pages display in the newly selected currenc
   edit content, sliders, currency, and sub-categories.
 - Favorites and compare are available to guests as well as registered shoppers (subject to
   the persistence clarification in FR-020).
-- The compare list maximum capacity defaults to 4 products unless specified otherwise.
+- The compare list maximum capacity is 3 products.
 - Filters operate on the existing product catalog and admin-managed product attributes; no
   new attribute types are introduced by this feature beyond sub-categories.
 - Hero background and other images are handled via the existing media host (Cloudinary)

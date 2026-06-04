@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,7 +31,7 @@
 
 ## Notes
 
-- Two [NEEDS CLARIFICATION] markers remain (FR-020 favorites/compare persistence scope;
-  FR-021 currency conversion behavior). These are high-impact scope decisions presented to
-  the user as Q1 and Q2. All other items pass.
-- Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
+- All [NEEDS CLARIFICATION] markers resolved via the 2026-06-04 clarification session
+  (currency conversion → admin-set exchange rate; favorites/compare → browser-local for all;
+  hero background → full-bleed home hero; compare list cap → 3). All items pass.
+- Spec is ready for `/speckit-plan`.
