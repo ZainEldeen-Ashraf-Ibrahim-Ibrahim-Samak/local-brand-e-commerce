@@ -37,6 +37,63 @@ export async function discountReductionCandidates(lines: PromotionLine[]): Promi
   return candidates;
 }
 
+/** Discounted display info for a product (feature 005 — show discounts on the public catalog). */
+export type ProductDiscountInfo = { reductionPerUnit: number; finalPrice: number };
+
+/**
+ * Resolve the single best active automatic discount *definition* per product (FR-023,
+ * no-stacking FR-038), chosen by the largest reduction on the product's list price. The
+ * returned Reduction can then be applied to any price (e.g. per-variation) consistently.
+ */
+export async function bestDiscountForProducts(
+  products: Array<{ id: string; categoryId?: string | null; basePrice: number }>,
+): Promise<Map<string, Reduction>> {
+  await connectDB();
+  const now = new Date();
+  const all = await Discount.find({ isActive: true }).lean();
+  const active = all.filter((d) => (!d.startsAt || d.startsAt <= now) && (!d.endsAt || d.endsAt >= now));
+  const map = new Map<string, Reduction>();
+  if (active.length === 0) return map;
+
+  for (const p of products) {
+    let best = 0;
+    let bestReductionDef: Reduction | null = null;
+    for (const d of active) {
+      const matches =
+        d.scope === "all" ||
+        (d.scope === "product" && d.productIds.some((id) => String(id) === p.id)) ||
+        (d.scope === "category" && p.categoryId != null && d.categoryIds.some((id) => String(id) === p.categoryId));
+      if (!matches) continue;
+      const def: Reduction = { type: d.type, value: d.value };
+      const amount = reductionAmount(def, p.basePrice);
+      if (amount > best) {
+        best = amount;
+        bestReductionDef = def;
+      }
+    }
+    if (bestReductionDef) map.set(p.id, bestReductionDef);
+  }
+  return map;
+}
+
+/**
+ * Compute the best discount as a concrete reduction + final price per product for catalog
+ * card display. Built on {@link bestDiscountForProducts}.
+ */
+export async function computeBestDiscounts(
+  products: Array<{ id: string; categoryId?: string | null; basePrice: number }>,
+): Promise<Map<string, ProductDiscountInfo>> {
+  const defs = await bestDiscountForProducts(products);
+  const map = new Map<string, ProductDiscountInfo>();
+  for (const p of products) {
+    const def = defs.get(p.id);
+    if (!def) continue;
+    const reductionPerUnit = reductionAmount(def, p.basePrice);
+    if (reductionPerUnit > 0) map.set(p.id, { reductionPerUnit, finalPrice: Math.max(0, p.basePrice - reductionPerUnit) });
+  }
+  return map;
+}
+
 export type CouponValidation =
   | { ok: true; coupon: CouponDoc & { _id: unknown }; reduction: number }
   | { ok: false; reason: string };

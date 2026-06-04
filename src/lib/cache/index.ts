@@ -1,17 +1,33 @@
 import { Redis } from "ioredis";
 import { getEnv } from "@/lib/config/env";
+import { logger } from "@/lib/observability/logger";
 
 /**
  * Redis client (singleton) + cache-aside helpers with tag-style key prefixes.
  * Writes invalidate by prefix so storefront reads never serve stale catalog,
  * pricing, or settings (Constitution Principle VI).
+ *
+ * The client is configured to degrade gracefully: if Redis is unreachable the
+ * commands fail fast (offline queue disabled) and an `error` listener swallows
+ * the connection error so a cache outage never crashes page rendering — callers
+ * fall back to computing the value directly.
  */
 const globalForRedis = globalThis as unknown as { _redis?: Redis };
 
 export function getRedis(): Redis {
   if (!globalForRedis._redis) {
     const env = getEnv();
-    globalForRedis._redis = new Redis(env.REDIS_URL);
+    const client = new Redis(env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      retryStrategy: (times) => Math.min(times * 200, 2000),
+    });
+    // Without an error listener ioredis emits an *unhandled* error event that can
+    // crash the server render. Log and continue so the cache simply no-ops.
+    client.on("error", (err: Error) => {
+      logger.warn("Redis connection error (cache disabled until reconnect)", { err: err.message });
+    });
+    globalForRedis._redis = client;
   }
   return globalForRedis._redis;
 }
@@ -38,7 +54,11 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 }
 
 export async function cacheSet<T>(key: string, value: T, ttlSeconds = 300): Promise<void> {
-  await getRedis().set(key, JSON.stringify(value), "EX", ttlSeconds);
+  try {
+    await getRedis().set(key, JSON.stringify(value), "EX", ttlSeconds);
+  } catch {
+    // Cache write failed (e.g. Redis down) — non-fatal; reads recompute.
+  }
 }
 
 /** Cache-aside: return cached value or compute, store, and return it. */
@@ -52,19 +72,28 @@ export async function cacheAside<T>(key: string, ttlSeconds: number, compute: ()
 
 /** Invalidate one exact key or all keys matching a prefix (e.g. on writes). */
 export async function cacheInvalidate(keyOrPrefix: string): Promise<void> {
-  const redis = getRedis();
-  if (keyOrPrefix.endsWith("*")) {
-    const keys = await redis.keys(keyOrPrefix);
-    if (keys.length) await redis.del(...keys);
-    return;
+  try {
+    const redis = getRedis();
+    if (keyOrPrefix.endsWith("*")) {
+      const keys = await redis.keys(keyOrPrefix);
+      if (keys.length) await redis.del(...keys);
+      return;
+    }
+    await redis.del(keyOrPrefix);
+  } catch {
+    // Invalidation failed (e.g. Redis down) — non-fatal; entries expire via TTL.
   }
-  await redis.del(keyOrPrefix);
 }
 
 /** Simple fixed-window rate limiter (used for tracking + auth). Returns true if allowed. */
 export async function rateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
-  const redis = getRedis();
-  const count = await redis.incr(key);
-  if (count === 1) await redis.expire(key, windowSeconds);
-  return count <= limit;
+  try {
+    const redis = getRedis();
+    const count = await redis.incr(key);
+    if (count === 1) await redis.expire(key, windowSeconds);
+    return count <= limit;
+  } catch {
+    // Redis unavailable — fail open so the limiter never locks users out on an outage.
+    return true;
+  }
 }

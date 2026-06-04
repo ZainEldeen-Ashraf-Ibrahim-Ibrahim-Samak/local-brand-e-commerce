@@ -3,6 +3,8 @@ import { SiteHeader } from "@/components/storefront/SiteHeader";
 import { SiteFooter } from "@/components/storefront/SiteFooter";
 import { getWebsiteSettings } from "@/services/settings.service";
 import { listCategoryTree } from "@/services/catalog.service";
+import { getActiveCurrency } from "@/services/currency.service";
+import { CurrencyProvider } from "@/lib/currency/CurrencyContext";
 import type { AppLocale } from "@/lib/config/env";
 
 export const dynamic = "force-dynamic";
@@ -16,12 +18,18 @@ export default async function StorefrontLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [settings, categories] = await Promise.all([getWebsiteSettings(), listCategoryTree()]);
+  const [settings, categories, currency] = await Promise.all([
+    getWebsiteSettings(),
+    listCategoryTree(),
+    getActiveCurrency(),
+  ]);
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteHeader settings={settings} categories={categories} locale={locale as AppLocale} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
-      <SiteFooter settings={settings} categories={categories} locale={locale as AppLocale} />
-    </div>
+    <CurrencyProvider value={currency}>
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader settings={settings} categories={categories} locale={locale as AppLocale} />
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+        <SiteFooter settings={settings} categories={categories} locale={locale as AppLocale} />
+      </div>
+    </CurrencyProvider>
   );
 }

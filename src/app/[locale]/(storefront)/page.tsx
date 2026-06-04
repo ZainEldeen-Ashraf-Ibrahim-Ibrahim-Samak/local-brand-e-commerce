@@ -1,7 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ProductCard } from "@/components/product/ProductCard";
+import { HeroSection } from "@/components/storefront/HeroSection";
+import { HomeSlider } from "@/components/storefront/HomeSlider";
 import { listProducts, listCategoryTree } from "@/services/catalog.service";
+import { getHome } from "@/services/home.service";
+import { getActiveCurrency } from "@/services/currency.service";
 import { ImageWithFallback } from "@/components/ui";
 import { pickLocale } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
@@ -18,10 +22,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const loc = locale as AppLocale;
   const t = await getTranslations("nav");
 
-  const categories = (await listCategoryTree()).slice(0, CATEGORY_LIMIT);
+  const categories = (await listCategoryTree()).filter((c) => !c.parent).slice(0, CATEGORY_LIMIT);
 
-  // Products for each category + the newest products overall, fetched in parallel.
-  const [perCategory, allProducts] = await Promise.all([
+  // Hero/slider config, currency, products for each category, and newest products — in parallel.
+  const [home, currency, perCategory, allProducts] = await Promise.all([
+    getHome(),
+    getActiveCurrency(),
     Promise.all(
       categories.map(async (category) => ({
         category,
@@ -35,6 +41,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="space-y-10">
+      {home.heroSlides.length > 0 && <HomeSlider slides={home.heroSlides} locale={loc} />}
+      {home.hero && <HeroSection hero={home.hero} locale={loc} />}
+      {home.offerSlides.length > 0 && <HomeSlider slides={home.offerSlides} locale={loc} />}
       {/* Category quick-links */}
       {categories.length > 0 && (
         <section className="space-y-4">
@@ -74,7 +83,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {products.map((p) => (
-                <ProductCard key={p.id} product={p} locale={loc} />
+                <ProductCard key={p.id} product={p} locale={loc} currency={currency} />
               ))}
             </div>
           </section>
@@ -90,7 +99,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {allProducts.map((p) => (
-            <ProductCard key={p.id} product={p} locale={loc} />
+            <ProductCard key={p.id} product={p} locale={loc} currency={currency} />
           ))}
         </div>
       </section>

@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { VariantPicker } from "@/components/product/VariantPicker";
+import { FavoriteButton } from "@/components/storefront/FavoriteButton";
+import { CompareButton } from "@/components/storefront/CompareButton";
 import { pickLocale } from "@/lib/shared/types";
 import type { ProductDetailDTO } from "@/services/catalog.service";
 import type { AppLocale } from "@/lib/config/env";
@@ -76,6 +78,13 @@ export function ProductDetailClient({
 
   const images = gallery.map((g) => g.image);
 
+  const actionItem = {
+    productSlug: product.slug,
+    name: product.name,
+    basePrice: product.basePrice,
+    image: product.image,
+  };
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <ProductGallery images={images} alt={name} selectedIndex={selectedIndex} onSelect={handleSelectImage} />
@@ -90,7 +99,13 @@ export function ProductDetailClient({
               {pickLocale(product.category.name, locale)}
             </Link>
           )}
-          <h1 className="text-2xl font-bold text-fg">{name}</h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-bold text-fg">{name}</h1>
+            <div className="flex shrink-0 items-center gap-2">
+              <FavoriteButton item={actionItem} />
+              <CompareButton item={actionItem} />
+            </div>
+          </div>
         </div>
 
         <VariantPicker

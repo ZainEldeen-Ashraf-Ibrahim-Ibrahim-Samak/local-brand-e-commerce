@@ -17,6 +17,8 @@ export type OfferInput = {
   image?: MediaRef | null;
   ctaLabel?: LocalizedText;
   ctaHref?: string;
+  /** Which storefront slider this slide belongs to (feature 005, FR-006). */
+  placement?: "hero" | "offer";
   isActive?: boolean;
   sortOrder?: number;
   startsAt?: string | null;
@@ -38,6 +40,7 @@ export async function createOffer(input: OfferInput): Promise<OfferDoc> {
     image: input.image,
     ctaLabel: input.ctaLabel ?? { en: "", ar: "" },
     ctaHref: input.ctaHref ?? "",
+    placement: input.placement ?? "offer",
     isActive: input.isActive ?? true,
     sortOrder: input.sortOrder ?? count,
     startsAt: input.startsAt ? new Date(input.startsAt) : undefined,
@@ -69,6 +72,7 @@ export async function updateOffer(id: string, patch: Partial<OfferInput>): Promi
   if (patch.image !== undefined) offer.image = patch.image as never;
   if (patch.ctaLabel) offer.ctaLabel = patch.ctaLabel as never;
   if (patch.ctaHref != null) offer.ctaHref = patch.ctaHref;
+  if (patch.placement) offer.placement = patch.placement as never;
   if (patch.isActive != null) offer.isActive = patch.isActive;
   if (patch.sortOrder != null) offer.sortOrder = patch.sortOrder;
   if (patch.startsAt !== undefined) offer.startsAt = (patch.startsAt ? new Date(patch.startsAt) : undefined) as never;

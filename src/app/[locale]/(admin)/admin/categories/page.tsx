@@ -14,6 +14,7 @@ export default async function AdminCategoriesPage() {
       nameEn: name.en,
       nameAr: name.ar,
       slug: c.slug,
+      parent: c.parent,
       isActive: c.isActive,
       image: c.image ?? null,
     };

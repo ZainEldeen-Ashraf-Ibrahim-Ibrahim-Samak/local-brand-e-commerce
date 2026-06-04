@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Badge } from "@/components/ui";
 import { formatMoney } from "@/lib/format";
+import { useDisplayCurrency } from "@/lib/currency/CurrencyContext";
 import { useCart } from "@/lib/cart/useCart";
 import { pickLocale } from "@/lib/shared/types";
 import type { ProductDetailDTO } from "@/services/catalog.service";
@@ -30,6 +31,7 @@ export function VariantPicker({
   onSelectVariation: (id: string) => void;
 }) {
   const t = useTranslations("common");
+  const currency = useDisplayCurrency();
   const { add } = useCart();
   const [added, setAdded] = useState(false);
 
@@ -49,8 +51,11 @@ export function VariantPicker({
       productSlug: product.slug,
       name: product.name,
       options: selected.options,
+      // Store the LIST price; the server applies the discount at checkout (shown as a
+      // Discount line) so totals stay self-consistent and never double-count.
       unitPrice: selected.price,
       quantity: 1,
+      image: selected.image ?? product.image,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -76,9 +81,15 @@ export function VariantPicker({
         ))}
       </div>
 
-      {selected && (
-        <p className="text-lg font-semibold text-primary">{formatMoney(selected.price, locale)}</p>
-      )}
+      {selected &&
+        (selected.salePrice != null && selected.salePrice < selected.price ? (
+          <p className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-danger">{formatMoney(selected.salePrice, locale, currency)}</span>
+            <span className="text-sm text-muted-fg line-through">{formatMoney(selected.price, locale, currency)}</span>
+          </p>
+        ) : (
+          <p className="text-lg font-semibold text-primary">{formatMoney(selected.price, locale, currency)}</p>
+        ))}
 
       <Button onClick={onAdd} disabled={!selected?.inStock} size="lg">
         {selected?.inStock ? (added ? "✓" : t("addToCart")) : t("outOfStock")}

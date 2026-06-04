@@ -37,12 +37,18 @@ export async function SiteFooter({
             </div>
           </div>
         )}
-        <div className="mb-4 flex gap-4">
+        <div className="mb-4 flex flex-wrap gap-4">
           <Link href="/about" className="hover:text-fg focus:outline-none focus:underline">
             {t("about")}
           </Link>
           <Link href="/contact" className="hover:text-fg focus:outline-none focus:underline">
             {t("contact")}
+          </Link>
+          <Link href="/privacy" className="hover:text-fg focus:outline-none focus:underline">
+            {t("privacy")}
+          </Link>
+          <Link href="/terms" className="hover:text-fg focus:outline-none focus:underline">
+            {t("terms")}
           </Link>
         </div>
         <div className="flex flex-wrap gap-4">

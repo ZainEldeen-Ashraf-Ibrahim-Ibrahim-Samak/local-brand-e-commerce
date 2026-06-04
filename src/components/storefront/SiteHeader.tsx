@@ -5,6 +5,7 @@ import type { WebsiteSettingsDoc } from "@/models/WebsiteSettings";
 import type { AppLocale } from "@/lib/config/env";
 import type { StoreCategory } from "@/services/catalog.service";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { HeaderActions } from "@/components/storefront/HeaderActions";
 import { mediaUrl } from "@/lib/media/cloudinary-url";
 
 /** Storefront header rendered from admin WebsiteSettings (FR-026). */
@@ -46,9 +47,7 @@ export async function SiteHeader({
           <Link href="/track" className="text-fg hover:text-primary">
             {t("trackOrder")}
           </Link>
-          <Link href="/cart" className="text-fg hover:text-primary">
-            {t("cart") /* cart label wired in US1 */}
-          </Link>
+          <HeaderActions />
           <LanguageSwitcher />
         </nav>
       </div>

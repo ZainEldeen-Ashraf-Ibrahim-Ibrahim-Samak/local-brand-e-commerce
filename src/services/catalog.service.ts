@@ -3,6 +3,8 @@ import { Product, type ProductDoc } from "@/models/Product";
 import { Variation, type VariationDoc } from "@/models/Variation";
 import { Category, type CategoryDoc } from "@/models/Category";
 import { cacheAside, CacheKeys } from "@/lib/cache";
+import { computeBestDiscounts, bestDiscountForProducts } from "@/services/promotions.service";
+import { reductionAmount } from "@/lib/pricing/resolve";
 import type { FilterQuery } from "mongoose";
 
 /**
@@ -27,15 +29,24 @@ export type ProductCardDTO = {
   slug: string;
   name: { en: string; ar: string };
   basePrice: number;
+  /** Discounted price when an active automatic discount applies (FR-023). */
+  salePrice?: number;
   image?: { cloudinaryId: string; version: string };
 };
+
+export type SubCategoryFacet = { slug: string; name: { en: string; ar: string } };
 
 export type CatalogResult = {
   items: ProductCardDTO[];
   page: number;
   pageSize: number;
   total: number;
-  facets: { sizes: string[]; colors: string[]; priceRange: { min: number; max: number } };
+  facets: {
+    sizes: string[];
+    colors: string[];
+    priceRange: { min: number; max: number };
+    subCategories: SubCategoryFacet[];
+  };
 };
 
 function toCard(p: ProductDoc & { _id: unknown }): ProductCardDTO {
@@ -55,10 +66,24 @@ export async function listProducts(query: CatalogQuery): Promise<CatalogResult> 
 
   const filter: FilterQuery<ProductDoc> = { status: "published" };
 
+  // Track the selected parent category so we can surface its sub-categories as a facet.
+  let selectedCategoryId: unknown = null;
   if (query.categorySlug) {
     const cat = await Category.findOne({ slug: query.categorySlug, isActive: true }).lean();
-    if (cat) filter.category = cat._id;
-    else return { items: [], page, pageSize, total: 0, facets: { sizes: [], colors: [], priceRange: { min: 0, max: 0 } } };
+    if (cat) {
+      selectedCategoryId = cat._id;
+      // Selecting a category includes it AND its descendant sub-categories (FR-011).
+      const children = await Category.find({ parent: cat._id, isActive: true }).distinct("_id");
+      filter.category = children.length ? { $in: [cat._id, ...children] } : cat._id;
+    } else {
+      return {
+        items: [],
+        page,
+        pageSize,
+        total: 0,
+        facets: { sizes: [], colors: [], priceRange: { min: 0, max: 0 }, subCategories: [] },
+      };
+    }
   }
   if (query.q) filter.$text = { $search: query.q };
   if (query.minPrice != null || query.maxPrice != null) {
@@ -86,26 +111,47 @@ export async function listProducts(query: CatalogQuery): Promise<CatalogResult> 
   const [docs, total, facets] = await Promise.all([
     Product.find(filter).sort(sort).skip((page - 1) * pageSize).limit(pageSize).lean(),
     Product.countDocuments(filter),
-    computeFacets(filter),
+    computeFacets(filter, selectedCategoryId),
   ]);
 
-  return { items: docs.map((d) => toCard(d as ProductDoc & { _id: unknown })), page, pageSize, total, facets };
+  const typedDocs = docs as Array<ProductDoc & { _id: unknown }>;
+  const items = typedDocs.map(toCard);
+  // Apply the best active automatic discount to each card for public display (FR-023).
+  const discounts = await computeBestDiscounts(
+    typedDocs.map((d) => ({ id: String(d._id), categoryId: d.category ? String(d.category) : null, basePrice: d.basePrice })),
+  );
+  for (const item of items) {
+    const info = discounts.get(item.id);
+    if (info) item.salePrice = info.finalPrice;
+  }
+
+  return { items, page, pageSize, total, facets };
 }
 
-async function computeFacets(filter: FilterQuery<ProductDoc>): Promise<CatalogResult["facets"]> {
+async function computeFacets(
+  filter: FilterQuery<ProductDoc>,
+  selectedCategoryId: unknown,
+): Promise<CatalogResult["facets"]> {
   const productIds = await Product.find(filter).distinct("_id");
-  const [sizes, colors, priceAgg] = await Promise.all([
+  const [sizes, colors, priceAgg, subCats] = await Promise.all([
     Variation.find({ product: { $in: productIds }, isActive: true }).distinct("options.size"),
     Variation.find({ product: { $in: productIds }, isActive: true }).distinct("options.color"),
     Product.aggregate<{ min: number; max: number }>([
       { $match: filter },
       { $group: { _id: null, min: { $min: "$basePrice" }, max: { $max: "$basePrice" } } },
     ]),
+    selectedCategoryId
+      ? Category.find({ parent: selectedCategoryId, isActive: true }).sort({ sortOrder: 1 }).lean()
+      : Promise.resolve([] as Array<CategoryDoc & { _id: unknown }>),
   ]);
   return {
     sizes: (sizes as string[]).filter(Boolean).sort(),
     colors: (colors as string[]).filter(Boolean).sort(),
     priceRange: { min: priceAgg[0]?.min ?? 0, max: priceAgg[0]?.max ?? 0 },
+    subCategories: (subCats as Array<CategoryDoc & { _id: unknown }>).map((c) => ({
+      slug: c.slug,
+      name: c.name as { en: string; ar: string },
+    })),
   };
 }
 
@@ -119,6 +165,8 @@ export type ProductDetailDTO = ProductCardDTO & {
     sku: string;
     options: Record<string, string>;
     price: number;
+    /** Discounted price for this variation when an active discount applies (FR-023). */
+    salePrice?: number;
     inStock: boolean;
     stock: number;
     /** Optional per-variation featured image (FR-202b). Null when not set. */
@@ -136,6 +184,15 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailDTO |
       p.category ? Category.findById(p.category).lean() : Promise.resolve(null),
     ]);
     const card = toCard(p as ProductDoc & { _id: unknown });
+    // Best active discount definition for this product, applied to base + each variation price.
+    const discMap = await bestDiscountForProducts([
+      { id: card.id, categoryId: p.category ? String(p.category) : null, basePrice: card.basePrice },
+    ]);
+    const reduction = discMap.get(card.id) ?? null;
+    if (reduction) {
+      const r = reductionAmount(reduction, card.basePrice);
+      if (r > 0) card.salePrice = Math.max(0, card.basePrice - r);
+    }
     return {
       ...card,
       description: p.description as { en: string; ar: string },
@@ -150,11 +207,14 @@ export async function getProductBySlug(slug: string): Promise<ProductDetailDTO |
       })),
       variations: variations.map((v) => {
         const img = v.image as ({ cloudinaryId?: string | null; version?: string | null } | null | undefined);
+        const price = v.priceOverride ?? p.basePrice;
+        const vReduction = reduction ? reductionAmount(reduction, price) : 0;
         return {
           id: String(v._id),
           sku: v.sku,
           options: (v.options ?? {}) as Record<string, string>,
-          price: v.priceOverride ?? p.basePrice,
+          price,
+          salePrice: vReduction > 0 ? Math.max(0, price - vReduction) : undefined,
           inStock: v.stock > 0,
           stock: v.stock,
           image:

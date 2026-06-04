@@ -13,6 +13,7 @@ const patchSchema = z.object({
   image: mediaRefSchema.nullable().optional(),
   ctaLabel: localizedTextSchema.optional(),
   ctaHref: z.string().optional(),
+  placement: z.enum(["hero", "offer"]).optional(),
   isActive: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
   startsAt: z.string().nullable().optional(),

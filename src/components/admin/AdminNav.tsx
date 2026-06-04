@@ -12,6 +12,7 @@ const NAV: Array<{ href: string; label: string }> = [
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/offers", label: "Offers" },
   { href: "/admin/promotions", label: "Promotions" },
+  { href: "/admin/content", label: "Content" },
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/theme", label: "Theme" },
   { href: "/admin/tax-shipping", label: "Tax & Shipping" },

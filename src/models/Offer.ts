@@ -11,6 +11,7 @@ const offerSchema = new Schema(
     image: mediaRef,
     ctaLabel: localized,
     ctaHref: { type: String, default: "" },
+    placement: { type: String, enum: ["hero", "offer"], default: "offer", index: true },
     isActive: { type: Boolean, default: true, index: true },
     sortOrder: { type: Number, default: 0, index: true },
     startsAt: { type: Date },

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { Button, Input, Card, CardBody, Badge, MediaUploader } from "@/components/ui";
+import { Button, Input, Select, Card, CardBody, Badge, MediaUploader } from "@/components/ui";
 import { mediaUrl } from "@/lib/media/cloudinary-url";
 import type { MediaRef } from "@/lib/shared/types";
 
@@ -11,6 +11,7 @@ export type ManagedCategory = {
   nameEn: string;
   nameAr: string;
   slug: string;
+  parent: string | null;
   isActive: boolean;
   image?: MediaRef | null;
 };
@@ -25,11 +26,16 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
   const router = useRouter();
   const [nameEn, setNameEn] = useState("");
   const [nameAr, setNameAr] = useState("");
+  const [parent, setParent] = useState<string>("");
   const [image, setImage] = useState<MediaRef | null>(null);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Only top-level categories may act as a parent (one level of nesting).
+  const parentOptions = categories.filter((c) => !c.parent && c.id !== editingId);
+  const nameById = new Map(categories.map((c) => [c.id, c.nameEn || c.nameAr || c.slug]));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -45,6 +51,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: { en: nameEn, ar: nameAr },
+        parent: parent || null,
         image,
       }),
     });
@@ -57,6 +64,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
 
     setNameEn("");
     setNameAr("");
+    setParent("");
     setImage(null);
     setEditingId(null);
     router.refresh();
@@ -86,6 +94,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
     setEditingId(cat.id);
     setNameEn(cat.nameEn);
     setNameAr(cat.nameAr);
+    setParent(cat.parent ?? "");
     setImage(cat.image || null);
     setError(null);
   }
@@ -94,6 +103,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
     setEditingId(null);
     setNameEn("");
     setNameAr("");
+    setParent("");
     setImage(null);
     setError(null);
   }
@@ -134,6 +144,7 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
                       <span className="text-muted-fg text-xs" dir="rtl">
                         ({c.nameAr})
                       </span>
+                      {c.parent && <Badge tone="info">sub of {nameById.get(c.parent) ?? "—"}</Badge>}
                       {!c.isActive && <Badge tone="danger">inactive</Badge>}
                     </div>
                     <span className="text-xs text-muted-fg">/{c.slug}</span>
@@ -175,6 +186,17 @@ export function CategoryManager({ categories }: { categories: ManagedCategory[] 
               required
             />
           </div>
+          <label className="block text-sm">
+            <span className="mb-1 block text-muted-fg">Parent category (leave empty for a top-level category)</span>
+            <Select value={parent} onChange={(e) => setParent(e.target.value)} className="w-full md:w-1/2">
+              <option value="">— Top level —</option>
+              {parentOptions.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nameEn || c.nameAr || c.slug}
+                </option>
+              ))}
+            </Select>
+          </label>
           <div>
             <label className="block text-xs font-medium text-fg mb-1.5">Category Image</label>
             <MediaUploader

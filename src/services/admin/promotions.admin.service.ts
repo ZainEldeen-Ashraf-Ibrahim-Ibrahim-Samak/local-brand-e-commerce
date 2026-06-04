@@ -7,6 +7,16 @@ import type { LocalizedText } from "@/lib/shared/types";
 
 /** Admin CRUD for coupons + discounts (spec FR-023/FR-025). */
 
+/** Discounts affect public catalog prices, so invalidate those read caches too (feature 005). */
+async function invalidatePromotionsAndCatalog(): Promise<void> {
+  await Promise.all([
+    cacheInvalidate(CacheKeys.promotions),
+    cacheInvalidate(CacheKeys.products),
+    cacheInvalidate("cache:product:*"),
+    cacheInvalidate(CacheKeys.home),
+  ]);
+}
+
 // ---- Coupons --------------------------------------------------------------
 
 export type CouponInput = {
@@ -97,7 +107,7 @@ export async function createDiscount(input: DiscountInput): Promise<DiscountDoc>
     endsAt: input.endsAt ? new Date(input.endsAt) : undefined,
     isActive: input.isActive ?? true,
   });
-  await cacheInvalidate(CacheKeys.promotions);
+  await invalidatePromotionsAndCatalog();
   return discount.toObject();
 }
 
@@ -116,7 +126,7 @@ export async function updateDiscount(id: string, patch: Partial<DiscountInput>):
     discount.startsAt = (patch.startsAt ? new Date(patch.startsAt) : undefined) as never;
   if (patch.endsAt !== undefined) discount.endsAt = (patch.endsAt ? new Date(patch.endsAt) : undefined) as never;
   await discount.save();
-  await cacheInvalidate(CacheKeys.promotions);
+  await invalidatePromotionsAndCatalog();
   return discount.toObject();
 }
 
@@ -124,5 +134,5 @@ export async function deleteDiscount(id: string): Promise<void> {
   await connectDB();
   const discount = await Discount.findByIdAndDelete(id);
   if (!discount) throw Errors.notFound("Discount");
-  await cacheInvalidate(CacheKeys.promotions);
+  await invalidatePromotionsAndCatalog();
 }

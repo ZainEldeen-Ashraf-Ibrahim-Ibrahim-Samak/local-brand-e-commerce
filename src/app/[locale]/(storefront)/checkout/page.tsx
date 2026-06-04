@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCart } from "@/lib/cart/useCart";
 import { useRouter } from "@/i18n/navigation";
-import { Button, Input, Card, CardBody, Spinner, Badge } from "@/components/ui";
+import { Button, Input, Card, CardBody, Spinner, Badge, ImageWithFallback } from "@/components/ui";
 import { formatMoney } from "@/lib/format";
+import { useDisplayCurrency } from "@/lib/currency/CurrencyContext";
 import { pickLocale } from "@/lib/shared/types";
 import type { AppLocale } from "@/lib/config/env";
 import { useParams } from "next/navigation";
@@ -25,6 +26,7 @@ type ShippingOption = { id: string; label: { en: string; ar: string }; cost: num
 export default function CheckoutPage() {
   const params = useParams();
   const locale = (params.locale as AppLocale) ?? "en";
+  const currency = useDisplayCurrency();
   const { items, clear } = useCart();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -175,7 +177,7 @@ export default function CheckoutPage() {
                         {o.estimatedDays ? ` · ${o.estimatedDays}d` : ""}
                       </span>
                     </span>
-                    <span className="text-muted-fg">{formatMoney(o.cost, locale)}</span>
+                    <span className="text-muted-fg">{formatMoney(o.cost, locale, currency)}</span>
                   </label>
                 ))}
               </fieldset>
@@ -222,6 +224,32 @@ export default function CheckoutPage() {
         <CardBody>
           <h2 className="mb-4 text-lg font-semibold text-fg">Summary</h2>
 
+          {items.length > 0 && (
+            <ul className="mb-4 space-y-3">
+              {items.map((item) => (
+                <li key={item.variationId} className="flex items-center gap-3">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-token bg-muted">
+                    <ImageWithFallback
+                      image={item.image}
+                      alt={pickLocale(item.name, locale)}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-fg">{pickLocale(item.name, locale)}</p>
+                    <p className="truncate text-xs text-muted-fg">
+                      {Object.values(item.options).join(" / ")} · ×{item.quantity}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm text-fg">
+                    {formatMoney(item.unitPrice * item.quantity, locale, currency)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <div className="mb-4 flex gap-2">
             <Input
               placeholder="Coupon code"
@@ -249,25 +277,25 @@ export default function CheckoutPage() {
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-fg">Subtotal</dt>
-                <dd className="text-fg">{formatMoney(quote.totals.subtotal, locale)}</dd>
+                <dd className="text-fg">{formatMoney(quote.totals.subtotal, locale, currency)}</dd>
               </div>
               {quote.totals.discountTotal > 0 && (
                 <div className="flex justify-between">
                   <dt className="text-muted-fg">Discount</dt>
-                  <dd className="text-fg">- {formatMoney(quote.totals.discountTotal, locale)}</dd>
+                  <dd className="text-fg">- {formatMoney(quote.totals.discountTotal, locale, currency)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
                 <dt className="text-muted-fg">Tax</dt>
-                <dd className="text-fg">{formatMoney(quote.totals.taxTotal, locale)}</dd>
+                <dd className="text-fg">{formatMoney(quote.totals.taxTotal, locale, currency)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-fg">Shipping</dt>
-                <dd className="text-fg">{formatMoney(quote.totals.shippingCost, locale)}</dd>
+                <dd className="text-fg">{formatMoney(quote.totals.shippingCost, locale, currency)}</dd>
               </div>
               <div className="flex justify-between border-t border-border pt-2 font-semibold">
                 <dt className="text-fg">Total</dt>
-                <dd className="text-fg">{formatMoney(quote.totals.grandTotal, locale)}</dd>
+                <dd className="text-fg">{formatMoney(quote.totals.grandTotal, locale, currency)}</dd>
               </div>
             </dl>
           )}

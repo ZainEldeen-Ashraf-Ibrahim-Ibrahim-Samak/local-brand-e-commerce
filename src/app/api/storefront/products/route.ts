@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleRoute } from "@/lib/http/errors";
 import { listProducts, type CatalogQuery } from "@/services/catalog.service";
+import { getActiveCurrency } from "@/services/currency.service";
 
-/** GET /api/storefront/products — filter/search/facet catalog (FR-001/FR-002/FR-003). */
+/** GET /api/storefront/products — filter/search/facet catalog + active currency (FR-011/FR-021). */
 export async function GET(req: NextRequest) {
   return handleRoute(async () => {
     const sp = req.nextUrl.searchParams;
@@ -18,6 +19,7 @@ export async function GET(req: NextRequest) {
       page: num("page"),
       pageSize: num("pageSize"),
     };
-    return NextResponse.json(await listProducts(query));
+    const [result, currency] = await Promise.all([listProducts(query), getActiveCurrency()]);
+    return NextResponse.json({ ...result, currency });
   });
 }

@@ -31,6 +31,7 @@ export default async function AdminOffersPage() {
       titleEn: title.en,
       titleAr: title.ar,
       ctaHref: o.ctaHref ?? "",
+      placement: (o.placement as "hero" | "offer") ?? "offer",
       isActive: o.isActive,
       sortOrder: o.sortOrder,
       image,

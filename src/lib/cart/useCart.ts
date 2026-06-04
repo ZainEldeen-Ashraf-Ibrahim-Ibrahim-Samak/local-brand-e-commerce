@@ -13,6 +13,8 @@ export type CartItem = {
   options: Record<string, string>;
   unitPrice: number;
   quantity: number;
+  /** Variation image if set, else the product's first image (for cart/checkout display). */
+  image?: { cloudinaryId: string; version: string };
 };
 
 const KEY = "lb_cart_v1";

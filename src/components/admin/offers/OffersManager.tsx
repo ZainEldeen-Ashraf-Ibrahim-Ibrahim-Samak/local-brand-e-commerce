@@ -2,15 +2,18 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { Button, Input, Card, CardBody, Badge, MediaUploader } from "@/components/ui";
+import { Button, Input, Select, Card, CardBody, Badge, MediaUploader } from "@/components/ui";
 import { mediaUrl } from "@/lib/media/cloudinary-url";
 import type { MediaRef } from "@/lib/shared/types";
+
+export type SlidePlacement = "hero" | "offer";
 
 export type ManagedOffer = {
   id: string;
   titleEn: string;
   titleAr: string;
   ctaHref: string;
+  placement: SlidePlacement;
   isActive: boolean;
   sortOrder: number;
   image?: MediaRef | null;
@@ -23,6 +26,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
   const [titleEn, setTitleEn] = useState("");
   const [titleAr, setTitleAr] = useState("");
   const [ctaHref, setCtaHref] = useState("");
+  const [placement, setPlacement] = useState<SlidePlacement>("offer");
   const [image, setImage] = useState<MediaRef | null>(null);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -49,6 +53,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
       body: JSON.stringify({
         title: { en: titleEn, ar: titleAr },
         ctaHref,
+        placement,
         image,
       }),
     });
@@ -62,6 +67,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
     setTitleEn("");
     setTitleAr("");
     setCtaHref("");
+    setPlacement("offer");
     setImage(null);
     setEditingId(null);
     router.refresh();
@@ -106,6 +112,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
     setTitleEn(offer.titleEn);
     setTitleAr(offer.titleAr);
     setCtaHref(offer.ctaHref);
+    setPlacement(offer.placement);
     setImage(offer.image || null);
     setError(null);
   }
@@ -115,6 +122,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
     setTitleEn("");
     setTitleAr("");
     setCtaHref("");
+    setPlacement("offer");
     setImage(null);
     setError(null);
   }
@@ -145,6 +153,7 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-fg">{o.titleEn || o.titleAr || "(untitled)"}</span>
+                    <Badge tone={o.placement === "hero" ? "info" : "neutral"}>{o.placement}</Badge>
                     {!o.isActive && <Badge tone="danger">inactive</Badge>}
                   </div>
                   {o.ctaHref && <span className="text-muted-fg text-xs">{o.ctaHref}</span>}
@@ -194,6 +203,14 @@ export function OffersManager({ offers }: { offers: ManagedOffer[] }) {
               value={ctaHref}
               onChange={(e) => setCtaHref(e.target.value)}
             />
+            <Select
+              value={placement}
+              onChange={(e) => setPlacement(e.target.value as SlidePlacement)}
+              aria-label="Slider placement"
+            >
+              <option value="offer">Offer slider</option>
+              <option value="hero">Hero slider</option>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium text-fg mb-1.5">Slide Image</label>

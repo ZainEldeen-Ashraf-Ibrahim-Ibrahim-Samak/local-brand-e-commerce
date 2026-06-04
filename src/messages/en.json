@@ -23,6 +23,8 @@
     "trackOrder": "Track order",
     "about": "About",
     "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
     "cart": "Cart"
   },
   "filters": {
@@ -30,7 +32,14 @@
     "color": "Color",
     "price": "Price",
     "category": "Category",
-    "clear": "Clear filters"
+    "subCategory": "Sub-category",
+    "minPrice": "Min price",
+    "maxPrice": "Max price",
+    "apply": "Apply",
+    "clear": "Clear filters",
+    "results": "{count} results",
+    "noResults": "No products match your filters.",
+    "reset": "Reset filters"
   },
   "checkout": {
     "contact": "Contact details",
@@ -95,6 +104,29 @@
   "about": {
     "title": "About Us",
     "noContent": "No content configured yet."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "noContent": "Privacy policy is not available yet."
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "noContent": "Terms & conditions are not available yet."
+  },
+  "favorites": {
+    "title": "Favorites",
+    "empty": "You have no favorites yet.",
+    "add": "Add to favorites",
+    "remove": "Remove from favorites"
+  },
+  "compare": {
+    "title": "Compare",
+    "empty": "Your compare list is empty.",
+    "add": "Add to compare",
+    "remove": "Remove from compare",
+    "full": "Compare list is full (max 3). Remove an item first.",
+    "attribute": "Attribute",
+    "price": "Price"
   },
   "contact": {
     "title": "Contact Us",
